@@ -4,7 +4,7 @@ import pygame
 # ---Импортируем движок и объекты---
 from src.entities.player import Player
 from src.engine.map import Map
-from engine import GameEngine
+from src.engine.engine import GameEngine
 
 # ---Инциализация---
 pygame.init()
