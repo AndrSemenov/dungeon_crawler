@@ -2,8 +2,8 @@
 import pygame
 
 # ---Импортируем движок и объекты---
-from player import Player
-from map import Map
+from src.entities.player import Player
+from src.engine.map import Map
 from engine import GameEngine
 
 # ---Инциализация---
