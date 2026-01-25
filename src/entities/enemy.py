@@ -1,6 +1,6 @@
 import pygame
 import random
-import map
+import src.engine.map as map
 
 class Enemy:
     def __init__(self, x, y, HP, damage, attack_probability = 0.01):
@@ -38,7 +38,7 @@ class Enemy:
     def render_state(self, first_x, first_y, scale, br, map):
         if self.approaching:
             self.approach_progress += 0.075  # скорость приближения
-                               
+
             if self.approach_progress >= 1:
                 self.approach_progress = 0.0
                 self.approaching = False
@@ -52,7 +52,7 @@ class Enemy:
             self.trigger = True
             self.scale = scale
             self.brightness = br
-            
+
         elif scale == 0.4 and self.trigger:
             self.approaching = True
             self.scale = scale
@@ -67,10 +67,10 @@ class Enemy:
             self.scale = 0.75
             self.brightness = 0.5
 
-            
 
-        
-        
+
+
+
 
 class Skeleton(Enemy):
     def __init__(self, x, y):
