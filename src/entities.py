@@ -30,7 +30,7 @@ class Creature(Entity):
     """Base class for creature. Like entity but can take damage, die, move
     """
     def __init__(self,
-                 sprite_path: Path,
+                 sprite_path: Optional[Path],
                  hp_max: int, # TODO: should be hp_max, hp_current, probably defined somewhere else
                  x: int = 0,
                  y: int = 0):
@@ -79,9 +79,9 @@ class Player(Creature):
     """Player class. Acting with inventory
     """
     def __init__(self,
-                 sprite_path: Path,
-                 inventory: Inventory,
-                 attributes: Attributes,
+                 inventory: Inventory = Inventory(),
+                 attributes: Attributes = Attributes(),
+                 sprite_path: Optional[Path] = None,
                  hp_max: int = 10,
                  x: int = 0,
                  y: int = 0):
@@ -95,7 +95,7 @@ class Player(Creature):
         # logger.debug(f"Attack throw...")
         # logger.info(f"")
 
-        return NotImplemented
+        return self.inventory.damage
 
 class Enemy(Creature):
     def __init__(self,
@@ -119,8 +119,8 @@ class Enemy(Creature):
         self.in_combat = False
 
         self.advantage = 1
-        
-    def get_dimmed_sprite 
+
+    def get_dimmed_sprite
 
 
 

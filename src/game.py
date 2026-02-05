@@ -2,7 +2,9 @@ import sys
 import pygame
 import logging
 
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, LOG_LEVEL
+from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, LOG_LEVEL, MAP
+from src.entities import Player, Enemy
+from src.map import Map
 from src.level import Level
 
 logging.basicConfig(
@@ -19,7 +21,10 @@ class Game:
         self.clock = pygame.time.Clock()
 
         # init level
-        self.level = Level()
+        self.level = Level(
+            player=Player(x=1, y=1),
+            map=
+        )
 
         logger.debug("Game initialized successfully!")
 
