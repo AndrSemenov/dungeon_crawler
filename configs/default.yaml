@@ -1,0 +1,9 @@
+# MAIN
+
+# GRAPHICS
+graphics:
+  screen_width: 1024
+  screen_height: 1024
+  fps: 60
+
+# PATHS

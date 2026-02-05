@@ -7,9 +7,11 @@ class GameEngine:
         self.screen = screen
         self.player = player
         self.map = map
-        self.running = True 
+        self.running = True
+
+        # попробовать вынести подгрузку нужных ассетов в отдельный файл, который будет грузить только то, что указано в конфиге уровня
         self.hallway_textures = {
-            
+
             'hallway': pygame.image.load("assets/hallway_textures/hallway.png"),
             'hallway_first_turn_both': pygame.image.load("assets/hallway_textures/hallway_first_turn_both.png"),
             'hallway_first_turn_left': pygame.image.load("assets/hallway_textures/hallway_first_turn_left.png"),
@@ -21,7 +23,7 @@ class GameEngine:
             'hallway_second_turn_left_and_first_turn_right': pygame.image.load("assets/hallway_textures/hallway_second_turn_left_and_first_turn_right.png")
         }
         self.hallway_2block_textures = {
-            
+
             'hallway_2block': pygame.image.load("assets/hallway_2block_textures/hallway_2block.png"),
             'hallway_2block_first_turn_both': pygame.image.load("assets/hallway_2block_textures/hallway_2block_first_turn_both.png"),
             'hallway_2block_first_turn_left': pygame.image.load("assets/hallway_2block_textures/hallway_2block_first_turn_left.png"),
@@ -34,13 +36,13 @@ class GameEngine:
         }
 
         self.hallway_1block_textures = {
-            
+
             'hallway_1block': pygame.image.load("assets/hallway_1block_textures/hallway_1block.png"),
             'hallway_1block_turn_both': pygame.image.load("assets/hallway_1block_textures/hallway_1block_turn_both.png"),
             'hallway_1block_turn_left': pygame.image.load("assets/hallway_1block_textures/hallway_1block_turn_left.png"),
             'hallway_1block_turn_right': pygame.image.load("assets/hallway_1block_textures/hallway_1block_turn_right.png")
         }
-        self.textures = {'hallway': self.hallway_textures, 
+        self.textures = {'hallway': self.hallway_textures,
         'hallway_2block': self.hallway_2block_textures,
         'hallway_1block': self.hallway_1block_textures,
         'wall_front': pygame.image.load("assets/wall_front.png")
@@ -59,7 +61,7 @@ class GameEngine:
         self.log = ''
         self.game_over = False
 
-               
+
     def handle_input(self):
         # print("Обработка событий")
         for event in pygame.event.get():
@@ -93,9 +95,9 @@ class GameEngine:
                 if self.awaiting_input:
                     if event.key == pygame.K_SPACE:
                         self.resolve_combat_turn()
-                        
 
-    
+
+
     def resolve_combat_turn(self):
         if self.current_enemy.HP <= 0:
             self.in_combat = False
@@ -120,7 +122,7 @@ class GameEngine:
                 damage *= self.current_enemy.advantage
                 self.current_enemy.advantage = 1
 
-            
+
 
             self.player.HP -= damage
             print(f"{self.current_enemy.__class__.__name__} атакует: -{damage} HP")
@@ -133,8 +135,8 @@ class GameEngine:
             self.in_combat = False
             self.current_enemy = None
             self.game_over = True
-            
-            
+
+
             return
 
         print(self.awaiting_input)
@@ -167,14 +169,14 @@ class GameEngine:
 
 
     def render(self, map_mode=True):
-        
+
         self.screen.fill((0, 0, 0))
 
         self.draw_first_person_view()
 
         self.draw_enemy()
 
-        
+
 
         if map_mode:
             self.render_map()
@@ -202,7 +204,7 @@ class GameEngine:
 
     #отрисовка коридоров
     def draw_first_person_view(self):
-        
+
 
 
         #три клетки впереди свободны, рисуем коридор без тупика
@@ -221,7 +223,7 @@ class GameEngine:
                 else:
                     self.screen.blit(self.textures['hallway']['hallway_second_turn_right'], (0, 0))
 
-            #если второй поворот налево        
+            #если второй поворот налево
             elif self.second_turn_left:
                 #если первый поворот направо
                 if self.first_turn_right:
@@ -241,13 +243,13 @@ class GameEngine:
             #первый поворот налево
             elif self.first_turn_left:
                 self.screen.blit(self.textures['hallway']['hallway_first_turn_left'], (0, 0))
-            
+
             #без поворотов
             else:
                  self.screen.blit(self.textures['hallway']['hallway'], (0, 0))
 
 
-            
+
 
         elif self.first_cell and self.second_cell:
 
@@ -264,7 +266,7 @@ class GameEngine:
                 else:
                     self.screen.blit(self.textures['hallway_2block']['hallway_2block_second_turn_right'], (0, 0))
 
-            #если второй поворот налево        
+            #если второй поворот налево
             elif self.second_turn_left:
                 #если первый поворот направо
                 if self.first_turn_right:
@@ -284,13 +286,13 @@ class GameEngine:
             #первый поворот налево
             elif self.first_turn_left:
                 self.screen.blit(self.textures['hallway_2block']['hallway_2block_first_turn_left'], (0, 0))
-            
+
             #без поворотов
             else:
                  self.screen.blit(self.textures['hallway_2block']['hallway_2block'], (0, 0))
 
 
-            
+
         elif self.first_cell:
             #оба первых поворота
             if self.first_turn_right and self.first_turn_left:
@@ -303,7 +305,7 @@ class GameEngine:
             #первый поворот налево
             elif self.first_turn_left:
                 self.screen.blit(self.textures['hallway_1block']['hallway_1block_turn_left'], (0, 0))
-            
+
             #без поворотов
             else:
                  self.screen.blit(self.textures['hallway_1block']['hallway_1block'], (0, 0))
@@ -313,7 +315,7 @@ class GameEngine:
     #отрисовка врагов
     def draw_enemy(self):
         for dist, (fx, fy, scale, br) in enumerate([
-            
+
             (self.second_x, self.second_y, 0.4, 0.15),
             (self.first_x, self.first_y, 0.75, 0.5)
         ]):
@@ -322,17 +324,17 @@ class GameEngine:
             if not enemy:
                 continue
 
-        
+
 
             enemy.render_state(self.first_x, self.first_y, scale, br, self.map)
             interp_scale, interp_brightness = enemy.scale, enemy.brightness
 
-            
+
             original = enemy.get_dimmed_sprite(factor = interp_brightness)
             new_size = (int(original.get_width() * interp_scale), int(original.get_height() * interp_scale))
             scaled = pygame.transform.scale(original, new_size)
             self.screen.blit(scaled, (self.center_x - new_size[0] // 2, self.center_y - new_size[1] // 2))
-                
+
     #отрисовка мини-карты
     def render_map(self):
         tile_size = 20
@@ -378,7 +380,7 @@ class GameEngine:
                 self.awaiting_input = True
                 self.log = f"{enemy_in_front.__class__.__name__} атакует вас!"
                 enemy_in_front.advantage = 2
-            
+
             else:
                 self.in_combat = True
                 self.current_enemy = enemy_in_front
@@ -398,6 +400,5 @@ class GameEngine:
 
 
 
-    
 
-    
+

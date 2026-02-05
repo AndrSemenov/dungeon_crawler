@@ -1,4 +1,4 @@
-from ..entities import enemy
+from .entities import enemy
 
 class Map:
     def __init__(self):

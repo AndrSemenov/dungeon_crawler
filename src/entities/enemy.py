@@ -1,6 +1,6 @@
 import pygame
 import random
-import src.engine.map as map
+import src.map as map
 
 class Enemy:
     def __init__(self, x, y, HP, damage, attack_probability = 0.01):
@@ -67,15 +67,6 @@ class Enemy:
             self.scale = 0.75
             self.brightness = 0.5
 
-
-
-
-
-
 class Skeleton(Enemy):
     def __init__(self, x, y):
         super().__init__(x, y, HP=5, damage=1)
-
-
-
-
