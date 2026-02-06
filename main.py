@@ -13,10 +13,14 @@ screen = pygame.display.set_mode((1024, 1024))
 pygame.display.set_caption("Taurus project")
 clock = pygame.time.Clock()
 FPS = 60
-# ---Инициализация игрока---
-player = Player(x=1, y=1)
 # ---Инициализация карты---
 game_map = Map()
+# ---Инициализация игрока---
+for i, j in ((0, 0), (0, 1), (1, 0), (1, 1)):
+    if game_map.map[i][j]:
+        player_x, player_y = i, j
+        break
+player = Player(x=player_x, y=player_y)
 # ---Инициализация движка---
 engine = GameEngine(screen, player, game_map)
 # ---Главный игровой цикл---
