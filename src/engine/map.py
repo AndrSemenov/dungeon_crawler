@@ -1,19 +1,9 @@
 from ..entities import enemy
+from .maze_generation import MazeGenerator
 
 class Map:
     def __init__(self):
-        self.map = [
-            [0, 0, 0, 0, 0],
-            [0, 1, 1, 1, 1, 1, 0],
-            [0, 1, 0, 1, 0],
-            [0, 1, 0, 1, 1, 0],
-            [0, 1, 1, 1, 0],
-            [0, 1, 0, 1, 0, 1, 0, 0],
-            [0, 1, 0, 1, 1, 1, 1, 0],
-            [0, 1, 1, 1, 0, 0, 1, 0],
-            [0, 0, 0, 0, 0],
-        ]
-
+        self.map = MazeGenerator(25).maze
         self.enemies = {enemy.Skeleton(5, 1), enemy.Skeleton(4, 1)}
 
         self.explored = [[False for x in range(len(self.map[y]))] for y in range(len(self.map))]
