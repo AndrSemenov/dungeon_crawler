@@ -1,9 +1,12 @@
 import yaml
+import sys
 import logging
 
 from pathlib import Path
 
-CONFIG_PATH = Path(__file__).parent / "default.yaml"
+ROOT_PATH = Path(__file__).parent.parent
+ASSETS_PATH = ROOT_PATH / "data/assets"
+CONFIG_PATH = ROOT_PATH / "configs/default.yaml"
 
 with CONFIG_PATH.open(encoding="utf-8") as f:
     config = yaml.safe_load(f)
@@ -11,10 +14,17 @@ with CONFIG_PATH.open(encoding="utf-8") as f:
 # LOGGING
 LOG_LEVEL = "DEBUG"
 
+logging.basicConfig(
+    level=getattr(logging, LOG_LEVEL, logging.INFO),
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
+
 # GRAPHICS
-SCREEN_WIDTH: int = config["screen_width"]
-SCREEN_HEIGHT: int = config["screen_height"]
-FPS: int = config["fps"]
+SCREEN_WIDTH: int = config["graphics"]["screen_width"]
+SCREEN_HEIGHT: int = config["graphics"]["screen_height"]
+FPS: int = config["graphics"]["fps"]
 
 # LOAD LEVEL
 # TODO: get from map generator
@@ -30,11 +40,45 @@ MAP: list[list[int]] = [
     [0, 0, 0, 0, 0],
 ]
 
+MAP_SPRITES: dict[str, dict[str, Path]] = {
+    "hallway": {
+        "hallway": ASSETS_PATH / "hallway_textures/hallway.png",
+        "hallway_first_turn_both": ASSETS_PATH / "hallway_textures/hallway_first_turn_both.png",
+        "hallway_first_turn_left": ASSETS_PATH / "hallway_textures/hallway_first_turn_left.png",
+        "hallway_first_turn_right": ASSETS_PATH / "hallway_textures/hallway_first_turn_right.png",
+        "hallway_second_turn_both": ASSETS_PATH / "hallway_textures/hallway_second_turn_both.png",
+        "hallway_second_turn_right": ASSETS_PATH / "hallway_textures/hallway_second_turn_right.png",
+        "hallway_second_turn_left": ASSETS_PATH / "hallway_textures/hallway_second_turn_left.png",
+        "hallway_second_turn_right_and_first_turn_left": ASSETS_PATH / "hallway_textures/hallway_second_turn_right_and_first_turn_left.png",
+        "hallway_second_turn_left_and_first_turn_right": ASSETS_PATH / "hallway_textures/hallway_second_turn_left_and_first_turn_right.png",
+    },
+    "hallway_2block": {
+        "hallway_2block": ASSETS_PATH / "hallway_2block_textures/hallway_2block.png",
+        "hallway_2block_first_turn_both": ASSETS_PATH / "hallway_2block_textures/hallway_2block_first_turn_both.png",
+        "hallway_2block_first_turn_left": ASSETS_PATH / "hallway_2block_textures/hallway_2block_first_turn_left.png",
+        "hallway_2block_first_turn_right": ASSETS_PATH / "hallway_2block_textures/hallway_2block_first_turn_right.png",
+        "hallway_2block_second_turn_both": ASSETS_PATH / "hallway_2block_textures/hallway_2block_second_turn_both.png",
+        "hallway_2block_second_turn_right": ASSETS_PATH / "hallway_2block_textures/hallway_2block_second_turn_right.png",
+        "hallway_2block_second_turn_left": ASSETS_PATH / "hallway_2block_textures/hallway_2block_second_turn_left.png",
+        "hallway_2block_second_turn_right_and_first_turn_left": ASSETS_PATH / "hallway_2block_textures/hallway_2block_second_turn_right_and_first_turn_left.png",
+        "hallway_2block_second_turn_left_and_first_turn_right": ASSETS_PATH / "hallway_2block_textures/hallway_2block_second_turn_left_and_first_turn_right.png",
+    },
+    "hallway_1block": {
+        "hallway_1block": ASSETS_PATH / "hallway_1block_textures/hallway_1block.png",
+        "hallway_1block_turn_both": ASSETS_PATH / "hallway_1block_textures/hallway_1block_turn_both.png",
+        "hallway_1block_turn_left": ASSETS_PATH / "hallway_1block_textures/hallway_1block_turn_left.png",
+        "hallway_1block_turn_right": ASSETS_PATH / "hallway_1block_textures/hallway_1block_turn_right.png",
+    },
+    "wall_front": {
+        "wall_front": ASSETS_PATH / "wall_front.png"
+    }
+}
+
 # LOAD ENEMIES
 # TODO: get from map config
 ENEMIES = [
-    {"cfg": "skeleton", "pos_x": 5, "pos_y": 1},
-    {"cfg": "skeleton", "pos_x": 4, "pos_y": 1}
+    {"name": "skeleton", "asset": "Skeleton.png", "x": 5, "y": 1, "hp_max": 5, "damage": 1},
+    {"name": "skeleton", "asset": "Skeleton.png", "x": 4, "y": 1, "hp_max": 5, "damage": 1}
 ]
 
 # LOAD PLAYER
