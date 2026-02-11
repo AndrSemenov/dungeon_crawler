@@ -2,8 +2,9 @@ from abc import abstractmethod
 from src.constants import logger
 from src.render import SpriteEntity
 from src.utils.rpg import Inventory, Attributes
-from src.level import Level
 from src.utils.directions import Direction, DIRECTION_VECTORS
+from src.behaviors.approach import ApproachProcess
+from src.level import Level
 from typing import Optional
 from pathlib import Path
 
@@ -39,6 +40,7 @@ class Creature(Entity):
                  y: int = 0,
                  direction: Direction = Direction.NORTH):
 
+        super().__init__(x=x, y=y, sprite_path=sprite_path)
         self.name = "Base creature"
 
         self.hp_max = hp_max
@@ -49,73 +51,31 @@ class Creature(Entity):
         else:
             self.alive = False
 
-        super().__init__(x=x, y=y, sprite_path=sprite_path)
         self.direction = direction
+
+    def __bool__(self) -> bool:
+        return self.alive
 
     @abstractmethod
     def attack(self) -> int:
         ...
 
-    def modify_hp(self, amount: int) -> None:
+    def get_damage(self, amount: int) -> None:
+        assert amount >= 0, f"{self.name} [{self.id}] should get positive amount of damage! Got {amount} damage"
+        assert self.alive, f"{self.name} [{self.id}] should be alive to take damage!"
         logger.debug(f"Entity (id={self.id}, name={self.name}) change hp by {amount}")
-        if amount < 0 and self.alive:
-            logger.info(f"{self.name} [{self.id}] has lost {amount} HP")
+        if amount > 0:
             self.hp_current -= amount
-        elif amount > 0 and self.alive:
-            logger.info(f"{self.name} [{self.id}] has restored {amount} HP")
-            self.hp_current += min(amount, self.hp_max - self.hp_current)
         self.alive_check()
 
     def alive_check(self) -> None:
-        if self.hp_current and self.alive <= 0:
+        if self.hp_current <= 0 and self.alive:
             logger.info(f"{self.name} [{self.id}] has died")
             self.alive = False
 
     @property
     def health(self) -> tuple[int, int]:
         return self.hp_current, self.hp_max
-
-    # TODO: mb shoud be one method with different args?
-    # def move_forward(self, level: Level):
-    #     dx, dy = self.direction_vectors
-    #     new_x = self.x + dx
-    #     new_y = self.y + dy
-
-    #     logger.debug(f"{self.name} [{self.id}] is trying to move forward to {new_x, new_y}")
-    #     if level.is_walkable(new_x, new_y): # TODO: не нравится, что проверка проходимости вызывается в классе игрока, как будто это должна хенделить игра
-    #         self.x = new_x
-    #         self.y = new_y
-
-    # def move_backward(self, level: Level):
-    #     dx, dy = self.direction_vectors
-    #     new_x = self.x - dx
-    #     new_y = self.y - dy
-
-    #     logger.debug(f"{self.name} [{self.id}] is trying to move backward to {new_x, new_y}")
-    #     if level.is_walkable(new_x, new_y):
-    #         self.x = new_x
-    #         self.y = new_y
-
-    # def move_forward(self, level: Level):
-    #     dx, dy = self.direction_vectors
-    #     new_x = self.x + dx
-    #     new_y = self.y + dy
-    #     if level.is_walkable(new_x, new_y):
-    #         # Проверяем, что клетка свободна от других сущностей
-    #         if level.get_entity_at(new_x, new_y) is None:
-    #             level.move_entity(self, new_x, new_y)
-    #             return True
-    #     return False
-
-    # def move_backward(self, level: Level):
-    #     dx, dy = self.direction_vectors
-    #     new_x = self.x - dx
-    #     new_y = self.y - dy
-    #     if level.is_walkable(new_x, new_y):
-    #         if level.get_entity_at(new_x, new_y) is None:
-    #             level.move_entity(self, new_x, new_y)
-    #             return True
-    #     return False
 
     def try_move(self, level: Level, dx: int, dy: int) -> bool:
         """
@@ -136,10 +96,12 @@ class Creature(Entity):
         return True
 
     def move_forward(self, level: Level) -> bool:
+        logger.debug(f"{self.name} [{self.id}] is moving forward")
         dx, dy = self.direction_vectors
         return self.try_move(level, dx, dy)
 
     def move_backward(self, level: Level) -> bool:
+        logger.debug(f"{self.name} [{self.id}] is moving backward")
         dx, dy = self.direction_vectors
         return self.try_move(level, -dx, -dy)
 
@@ -171,9 +133,9 @@ class Player(Creature):
                  x: int = 0,
                  y: int = 0,
                  direction: Direction = Direction.NORTH):
+        super().__init__(x=x, y=y, direction=direction, sprite_path=sprite_path, hp_max=hp_max)
         self.name = "Player"
         self.inventory = inventory
-        super().__init__(x=x, y=y, direction=direction, sprite_path=sprite_path, hp_max=hp_max)
 
     def attack(self):
         """Attack throw"""
@@ -191,7 +153,7 @@ class Enemy(Creature):
                  hp_max: int,
                  damage: int,
                  asset: str,
-                 attack_probability: float = 0.01, # TODO: refactor
+                 base_attack_probability: float = 0.01, # TODO: refactor
                  x: int = 0,
                  y: int = 0,
                  sprite_root_dir: Path = Path("data/assets/enemies")
@@ -199,8 +161,9 @@ class Enemy(Creature):
 
         self.name = name
         super().__init__(x=x, y=y, sprite_path=sprite_root_dir / asset, hp_max=hp_max)
+        self.approach: Optional[ApproachProcess] = None
         self.damage = damage
-        self.attack_probability = attack_probability
+        self.base_attack_probability = base_attack_probability
 
         self.combat_state = {
             "charging": False,
@@ -209,18 +172,29 @@ class Enemy(Creature):
             "advantage": 1.0,
         }
 
-        @property
-        def charging(self) -> bool:
-            return self.combat_state["charging"]
+    @property
+    def charging(self) -> bool:
+        return self.combat_state["charging"]
+
+    @charging.setter
+    def charging(self, value: bool):
+        self.combat_state["charging"] = value
+
+    @property
+    def charge_progress(self) -> float:
+        return self.combat_state["charge_progress"]
+
+    @charge_progress.setter
+    def charge_progress(self, value: float):
+        self.combat_state["charge_progress"] = max(0.0, min(1.0, value))
+
+    @property
+    def attack_probability(self) -> float:
+        # Можно будет модифицировать в зависимости от состояния
+        return self.base_attack_probability
 
         # мб должно быть в какой-то отдельной логике типа паттернов поведения
         # в этих классах хочется иметь только все, что относится к энитити
-        # self.approaching = False
-        # self.trigger = False
-        # self.approach_progress = 0.0
-        # self.in_combat = False
-
-        self.advantage = 1
 
     def attack(self) -> int:
         return self.damage

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Dict
+from src.constants import logger
 
 class Level:
     def __init__(self,
@@ -12,7 +13,7 @@ class Level:
         self.sprites = sprites
         self.enemies = enemies
 
-        self.entities_map: Dict[tuple[int, int], 'Enemy'] = {}
+        self.entities_map: Dict[tuple[int, int], 'Entity'] = {}
         self._rebuild_entities_map()
 
     def is_walkable(self, x, y):
@@ -21,7 +22,9 @@ class Level:
         return False
 
     def get_entity_at(self, x: int, y: int): #-> Enemy|None: # надо поспрашивать нейросеть, мб тут круче сделать какую-то мапу {(x, y): list[entities]}
-        self.entities_map.get((x, y))
+        key = (x, y)
+        entity = self.entities_map.get(key)
+        return entity
 
     def move_entity(self, entity, new_x: int, new_y: int):
         old_pos = (entity.x, entity.y)
