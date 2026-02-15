@@ -78,7 +78,7 @@ MAP_SPRITES: dict[str, dict[str, Path]] = {
 # TODO: get from map config
 ENEMIES = [
     {"name": "skeleton", "asset": "Skeleton.png", "x": 5, "y": 1, "hp_max": 5, "damage": 1},
-    {"name": "skeleton", "asset": "Skeleton.png", "x": 4, "y": 1, "hp_max": 5, "damage": 1}
+    {"name": "skeleton", "asset": "Skeleton.png", "x": 4, "y": 1, "hp_max": 5, "damage": 1},
 ]
 
 # LOAD PLAYER

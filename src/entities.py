@@ -125,7 +125,7 @@ class Creature(Entity):
 class Player(Creature):
     """Player class. Acting with inventory
     """
-    def __init__(self,
+    def __init__(self ,
                  inventory: Inventory = Inventory(),
                  attributes: Attributes = Attributes(),
                  sprite_path: Optional[Path] = None,
@@ -159,8 +159,8 @@ class Enemy(Creature):
                  sprite_root_dir: Path = Path("data/assets/enemies")
                  ):
 
-        self.name = name
         super().__init__(x=x, y=y, sprite_path=sprite_root_dir / asset, hp_max=hp_max)
+        self.name = name
         self.approach: Optional[ApproachProcess] = None
         self.damage = damage
         self.base_attack_probability = base_attack_probability
