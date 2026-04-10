@@ -1,6 +1,7 @@
 import yaml
 import sys
 import logging
+from src.utils import map_gen
 
 from pathlib import Path
 
@@ -28,17 +29,7 @@ FPS: int = config["graphics"]["fps"]
 
 # LOAD LEVEL
 # TODO: get from map generator
-MAP: list[list[int]] = [
-    [0, 0, 0, 0, 0],
-    [0, 1, 1, 1, 1, 1, 0],
-    [0, 1, 0, 1, 0],
-    [0, 1, 0, 1, 1, 0],
-    [0, 1, 1, 1, 0],
-    [0, 1, 0, 1, 0, 1, 0, 0],
-    [0, 1, 0, 1, 1, 1, 1, 0],
-    [0, 1, 1, 1, 0, 0, 1, 0],
-    [0, 0, 0, 0, 0],
-]
+MAP: list[list[int]] = map_gen.MazeGenerator(25).maze
 
 MAP_SPRITES: dict[str, dict[str, Path]] = {
     "hallway": {
