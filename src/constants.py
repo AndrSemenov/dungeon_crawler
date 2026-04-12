@@ -40,6 +40,12 @@ MAP: list[list[int]] = [
     [0, 0, 0, 0, 0],
 ]
 
+# Expample
+# MAP_SEED = 1337
+# MAP_SIZE = (10, 10)
+# MAP_LABYTINTH = True
+# MAP = generate_map(MAP_SEED, MAP_SIZE, MAP_LABYTINTH)
+
 MAP_SPRITES: dict[str, dict[str, Path]] = {
     "hallway": {
         "hallway": ASSETS_PATH / "hallway_textures/hallway.png",
@@ -77,8 +83,8 @@ MAP_SPRITES: dict[str, dict[str, Path]] = {
 # LOAD ENEMIES
 # TODO: get from map config
 ENEMIES = [
-    {"name": "skeleton", "asset": "Skeleton.png", "x": 5, "y": 1, "hp_max": 5, "damage": 1},
-    {"name": "skeleton", "asset": "Skeleton.png", "x": 4, "y": 1, "hp_max": 5, "damage": 1},
+    {"name": "skeleton", "asset": "Skeleton.png", "hp_max": 5, "damage": 1, "x": 5, "y": 1,},
+    {"name": "skeleton", "asset": "Skeleton.png", "hp_max": 5, "damage": 1, "x": 4, "y": 1,},
 ]
 
 # LOAD PLAYER

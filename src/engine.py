@@ -53,7 +53,7 @@ class GameEngine:
 
         self.visible_enemies = []
 
-        #боевая система
+        # боевая система
         self.in_combat = False
         self.current_enemy = None
         self.player_turn = True
@@ -63,9 +63,7 @@ class GameEngine:
 
 
     def handle_input(self):
-        # print("Обработка событий")
         for event in pygame.event.get():
-            #print(event)
             if event.type == pygame.QUIT:
                 self.running = False
             if event.type == pygame.KEYDOWN:
@@ -86,7 +84,6 @@ class GameEngine:
     def handle_combat_input(self):
         for event in pygame.event.get():
             print(self.awaiting_input)
-            #print('режим боя')
             if event.type == pygame.QUIT:
                 self.running = False
             if event.type == pygame.KEYDOWN:
@@ -95,8 +92,6 @@ class GameEngine:
                 if self.awaiting_input:
                     if event.key == pygame.K_SPACE:
                         self.resolve_combat_turn()
-
-
 
     def resolve_combat_turn(self):
         if self.current_enemy.HP <= 0:
@@ -121,8 +116,6 @@ class GameEngine:
                 self.log = 'враг атакует с преимуществом'
                 damage *= self.current_enemy.advantage
                 self.current_enemy.advantage = 1
-
-
 
             self.player.HP -= damage
             print(f"{self.current_enemy.__class__.__name__} атакует: -{damage} HP")
@@ -204,9 +197,6 @@ class GameEngine:
 
     #отрисовка коридоров
     def draw_first_person_view(self):
-
-
-
         #три клетки впереди свободны, рисуем коридор без тупика
         if self.first_cell and self.second_cell and self.third_cell:
 
@@ -291,8 +281,6 @@ class GameEngine:
             else:
                  self.screen.blit(self.textures['hallway_2block']['hallway_2block'], (0, 0))
 
-
-
         elif self.first_cell:
             #оба первых поворота
             if self.first_turn_right and self.first_turn_left:
@@ -323,8 +311,6 @@ class GameEngine:
 
             if not enemy:
                 continue
-
-
 
             enemy.render_state(self.first_x, self.first_y, scale, br, self.map)
             interp_scale, interp_brightness = enemy.scale, enemy.brightness
@@ -396,9 +382,3 @@ class GameEngine:
             self.awaiting_input = True
             self.log = f"{enemy_in_back.__class__.__name__} атакует вас со спины!"
             enemy_in_back.advantage = 10
-
-
-
-
-
-

@@ -30,6 +30,9 @@ class Entity:
             # TODO: add some placeholder, like blackpink textures in hl2
             self.sprite = None
 
+class Item(Entity):
+    pass
+
 class Creature(Entity):
     """Base class for creature. Like entity but can take damage, die, move
     """
