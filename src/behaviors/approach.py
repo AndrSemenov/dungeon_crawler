@@ -1,7 +1,6 @@
-# src/behaviors/approach.py   (новый файл или в mechanics.py)
-
 from dataclasses import dataclass
 from typing import Optional
+from src.constants import logger
 
 @dataclass
 class ApproachProcess:

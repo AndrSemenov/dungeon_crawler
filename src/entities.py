@@ -30,6 +30,9 @@ class Entity:
             # TODO: add some placeholder, like blackpink textures in hl2
             self.sprite = None
 
+    def __str__(self) -> str:
+        return f"{self.name, self.id}"
+
 class Item(Entity):
     pass
 
@@ -89,14 +92,19 @@ class Creature(Entity):
         new_y = self.y + dy
 
         if not level.is_walkable(new_x, new_y):
+            logger.debug(f"{self.name} [{self.id}] tries to move and been blocked by wall at ({new_x}, {new_y})")
             return False
 
-        if level.get_entity_at(new_x, new_y) is not None:
-            # Можно позже добавить обработку столкновения / атаки
+        creatures_there = level.get_creature_at(new_x, new_y)
+
+        if creatures_there:
+            logger.debug(f"{self.name} [{self.id}] tries to move and found creature(s) at ({new_x}, {new_y}): {creatures_there}")
             return False
 
-        level.move_entity(self, new_x, new_y)
-        return True
+        success = level.move_entity(self, new_x, new_y)
+        if success:
+            logger.debug(f"{self.name} [{self.id}] moved to ({new_x}, {new_y})")
+        return success
 
     def move_forward(self, level: Level) -> bool:
         logger.debug(f"{self.name} [{self.id}] is moving forward")
