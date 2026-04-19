@@ -2,4 +2,4 @@
 data/assets
 doc
 __pycache__/
-.venv
+.venv/

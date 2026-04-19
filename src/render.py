@@ -168,32 +168,67 @@ class GameRenderer:
             self.level.sprites["wall_front"]["wall_front"].draw(self.screen)
 
     def draw_entities(self):
-        # TODO: refactor
-        for depth, (fx, fy, base_scale, base_br) in enumerate([
+        """Рисует всех врагов с учётом Approach анимации"""
+        px, py = self.player.position
+        dx, dy = self.player.direction_vectors
 
-            (self.second_x, self.second_y, 0.4, 0.15),
-            (self.first_x, self.first_y, 0.75, 0.5)
-        ]):
-            entity = self.level.get_entity_at(fx, fy)
-            if not entity:
-                continue
+        # Проверяем только видимые позиции (первая и вторая клетка впереди)
+        positions_to_check = [
+            (px + 2*dx, py + 2*dy, 0.4, 0.15),   # дальняя клетка
+            (px + dx, py + dy, 0.75, 0.5),      # ближняя клетка
+        ]
 
+        for world_x, world_y, base_scale, base_brightness in positions_to_check:
+            for entity in self.level.get_entities_at(world_x, world_y):
+                if not hasattr(entity, 'sprite') or entity.sprite is None:
+                    continue
 
+                # === APPROACH АНИМАЦИЯ ===
+                scale = base_scale
+                brightness = base_brightness
 
-            # if isinstance(entity, Enemy) and entity.approach and entity.approach.active:
-            #     scale = entity.approach.current_scale
-            #     brightness = entity.approach.current_brightness
-            # else:
-            #     scale = base_scale
-            #     brightness = base_br
+                if hasattr(entity, 'approach') and entity.approach and entity.approach.active:
+                    scale = entity.approach.current_scale
+                    brightness = entity.approach.current_brightness
+                    # logger.debug(f"Approach active for {entity.name}: scale={scale:.2f}, brightness={brightness:.2f}")
 
-            scale = base_scale
-            brightness = base_br
+                # Берём спрайт и применяем яркость
+                original = entity.sprite.get_dimmed_sprite(factor=brightness)
 
-            original = entity.sprite.get_dimmed_sprite(factor=brightness)
-            new_size = (int(original.get_width() * scale), int(original.get_height() * scale))
-            scaled = pygame.transform.scale(original, new_size)
-            self.screen.blit(scaled, (self.center_x - new_size[0]//2, self.center_y - new_size[1]//2))
+                # Масштабируем
+                new_size = (int(original.get_width() * scale),
+                            int(original.get_height() * scale))
+                scaled = pygame.transform.scale(original, new_size)
+
+                # Центрируем на экране
+                draw_x = self.center_x - new_size[0] // 2
+                draw_y = self.center_y - new_size[1] // 2
+
+                self.screen.blit(scaled, (draw_x, draw_y))
+
+    # def draw_entities(self):
+    #     # TODO: refactor
+    #     for depth, (fx, fy, base_scale, base_br) in enumerate([
+
+    #         (self.second_x, self.second_y, 0.4, 0.15),
+    #         (self.first_x, self.first_y, 0.75, 0.5)
+    #     ]):
+    #         for entity in self.level.get_entities_at(fx, fy):
+
+    #             # if isinstance(entity, Enemy) and entity.approach and entity.approach.active:
+    #             #     scale = entity.approach.current_scale
+    #             #     brightness = entity.approach.current_brightness
+    #             # else:
+    #             #     scale = base_scale
+    #             #     brightness = base_br
+
+    #             scale = base_scale
+    #             brightness = base_br
+
+    #             original = entity.sprite.get_dimmed_sprite(factor=brightness)
+    #             new_size = (int(original.get_width() * scale), int(original.get_height() * scale))
+    #             scaled = pygame.transform.scale(original, new_size)
+    #             self.screen.blit(scaled, (self.center_x - new_size[0]//2, self.center_y - new_size[1]//2))
 
     def draw_minimap(self):
         # Создаём временную поверхность
