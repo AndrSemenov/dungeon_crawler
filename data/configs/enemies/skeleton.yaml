@@ -1,0 +1,6 @@
+# просто пример, не финальный вид
+
+name: skeleton
+asset: Skeleton.png
+hp_max: 5
+damage: 1
