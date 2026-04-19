@@ -94,15 +94,6 @@ class ExplorationState(GameState):
 
         return self._check_for_immediate_combat(new_x, new_y)
 
-    # def _try_move(self, creature, dx: int, dy: int) -> bool:
-    #     new_x = creature.x + dx
-    #     new_y = creature.y + dy
-
-    #     if creature.try_move(self.level, dx, dy):
-    #         return True
-
-    #     return self._check_for_combat(new_x, new_y)
-
     def _check_for_immediate_combat(self, x: int, y: int) -> bool:
         """Если игрок пытается наступить на клетку с врагом — сразу бой"""
         creatures_there = self.level.get_creature_at(x, y)
@@ -208,7 +199,7 @@ class CombatState(GameState):
             return
 
         now = time.time()
-        if now - self.last_enemy_attack_time >= 1.8:   # можно будет настраивать позже
+        if now - self.last_enemy_attack_time >= 1.8: # TODO: must be param defined by amount of enemy attacks in turn + random
             damage = self.enemy.attack()
             self.level.player.get_damage(damage)
             logger.info(f"{self.enemy.name} attacks player for {damage} damage!")
