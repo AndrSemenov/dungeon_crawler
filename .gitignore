@@ -1,4 +1,5 @@
-assets
+.DS_store
+data/assets
 doc
 __pycache__/
 .venv/
