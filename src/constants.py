@@ -29,7 +29,7 @@ FPS: int = config["graphics"]["fps"]
 
 # LOAD LEVEL
 # TODO: get from map generator
-MAP: list[list[int]] = map_gen.MazeGenerator(25).maze
+MAP: list[list[int]] = map_gen.MazeGenerator(25, 75).maze
 
 # Expample
 # MAP_SEED = 1337
@@ -73,11 +73,10 @@ MAP_SPRITES: dict[str, dict[str, Path]] = {
 
 # LOAD ENEMIES
 # TODO: get from map config
-ENEMIES = [
-    {"name": "skeleton", "asset": "Skeleton.png", "hp_max": 5, "damage": 1, "x": 5, "y": 1,},
-    {"name": "skeleton", "asset": "Skeleton.png", "hp_max": 5, "damage": 1, "x": 4, "y": 1,},
-]
+ENEMIES = map_gen.EnemyGenerator(MAP, config).generate()
 
 # LOAD PLAYER
 # TODO: get from map config
-PLAYER_START_POS = (1, 1)
+PLAYER_START_POS = pos = next((i, j) for i, row in enumerate(MAP)
+                    for j, val in enumerate(row)
+                    if val == 1)

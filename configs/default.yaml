@@ -7,3 +7,35 @@ graphics:
   fps: 60
 
 # PATHS
+
+#ENEMIES
+enemies:
+  skeleton:
+    asset: "Skeleton.png"
+    hp_max: 1
+    damage: 0
+    difficulty: 1
+
+  strong_skeleton:
+    asset: "Strong_Skeleton.png"
+    hp_max: 1
+    damage: 0
+    difficulty: 2
+
+  meduza:
+    asset: "Meduza.png"
+    hp_max: 1
+    damage: 0
+    difficulty: 3
+
+  boss:
+    asset: "Minotaur.png"
+    hp_max: 1
+    damage: 0
+    difficulty: 4   # отдельный уровень
+
+spawn:
+  skeleton: 10
+  strong_skeleton: 10
+  meduza: 10
+  boss: 1

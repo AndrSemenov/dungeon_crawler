@@ -39,8 +39,8 @@ class GameRenderer:
         self.visible_enemies = []
 
         # Параметры миникарты
-        self.minimap_size = 120
-        self.minimap_padding = 10
+        self.minimap_size = 360
+        self.minimap_padding = 2
         self.minimap_rect = pygame.Rect(
             self.screen.get_width() - self.minimap_size - self.minimap_padding,
             self.minimap_padding,
@@ -238,7 +238,12 @@ class GameRenderer:
         map_h = len(self.level.map)
         map_w = max(len(row) for row in self.level.map) if map_h > 0 else 1
 
-        cell_size = max(1, self.minimap_size // max(map_w, map_h))
+        scale_x = self.minimap_size / map_w
+        scale_y = self.minimap_size / map_h
+        cell_size = max(1, int(min(scale_x, scale_y)))
+
+        offset_x = (self.minimap_size - map_w * cell_size) // 2
+        offset_y = (self.minimap_size - map_h * cell_size) // 2
 
         px, py = self.player.position
 
@@ -254,8 +259,8 @@ class GameRenderer:
                 #     color = tuple(c // 3 for c in color)
 
                 rect = pygame.Rect(
-                    x * cell_size,
-                    y * cell_size,
+                    offset_x + x * cell_size,
+                    offset_y + y * cell_size,
                     cell_size,
                     cell_size
                 )
@@ -265,7 +270,7 @@ class GameRenderer:
         pygame.draw.circle(
             minimap,
             self.color_player,
-            (px * cell_size + cell_size // 2, py * cell_size + cell_size // 2),
+            (px * cell_size + offset_x + cell_size // 2, py * cell_size + offset_y + cell_size // 2),
             max(3, cell_size // 2)
         )
 
@@ -275,7 +280,7 @@ class GameRenderer:
             pygame.draw.circle(
                 minimap,
                 self.color_enemy,
-                (ex * cell_size + cell_size // 2, ey * cell_size + cell_size // 2),
+                (ex * cell_size + offset_x + cell_size // 2, ey * cell_size + offset_y + cell_size // 2),
                 max(2, cell_size // 3)
             )
 
@@ -291,5 +296,3 @@ class GameRenderer:
 
         # Миникарта в правом верхнем углу
         self.draw_minimap()
-
-
