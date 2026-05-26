@@ -1,0 +1,28 @@
+# ENEMIES
+enemies:
+  skeleton:
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 1
+
+  strong_skeleton:
+    # asset: "Strong_Skeleton.png"
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 2
+
+  meduza:
+    # asset: "Meduza.png"
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 3
+
+  boss:
+    # asset: "Minotaur.png"
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 4   # отдельный уровень

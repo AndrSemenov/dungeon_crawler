@@ -181,11 +181,10 @@ class CombatState(GameState):
         if action == InputAction.ATTACK and self.enemy and self.enemy.alive:
             if not self.qte.active:
                 # Запускаем QTE
-                player_attack = self.level.player.attack()
-                enemy_defense = self.enemy.defense if hasattr(self.enemy, 'defense') else 2
+                enemy_defense = self.enemy.defense if hasattr(self.enemy, 'defense') else 1
 
                 weapon = self.level.player.inventory.current_weapon
-                self.qte.start(player_attack, enemy_defense, weapon)
+                self.qte.start(enemy_defense, weapon)
                 logger.info(f"QTE started against {self.enemy.name}")
                 return True
             else:
@@ -232,19 +231,25 @@ class CombatState(GameState):
         if not self.enemy or not self.enemy.alive:
             return
 
-        # Обновляем QTE
         self.qte.update(dt)
 
-        # Автоатака врага
+        # enemy attacks
         now = time.time()
         if now - self.last_enemy_attack_time >= self.enemy.attack_speed:
-            damage = self.enemy.damage
-            self.level.player.get_damage(damage)
-            logger.info(f"{self.enemy.name} attacks player for {damage} damage!")
+            if self.qte.active:
+                # TODO: change 2.0 to enemy crit modifier
+                damage = self.enemy.damage * 2.0
+                self.qte.stop()
+                self.level.player.get_damage(damage)
+                logger.info(f"Player get damage while attacking and get crtitcal {damage} damage! ")
 
-            self.last_enemy_attack_time = now
+            else:
+                damage = self.enemy.damage
+                self.level.player.get_damage(damage)
+                logger.info(f"{self.enemy.name} attacks player for {damage} damage!")
 
-            # Если игрок умер
+                self.last_enemy_attack_time = now
+
             if not self.level.player.alive:
                 logger.info("Player died!")
                 self._end_combat(game_over=True)

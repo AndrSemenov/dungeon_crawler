@@ -128,6 +128,7 @@ class EnemyGenerator:
         attempts = 0
         max_attempts = count * 20
 
+        # TODO: fix enemy spawn at player spawn point
         while len(positions) < count and attempts < max_attempts:
             x = random.randint(zone_min_x, zone_max_x - 1)
             y = random.randint(0, self.height - 1)

@@ -1,0 +1,6 @@
+player:
+  attributes:
+    hp_max: 10
+    defense: 0
+    stamina_max: 100
+  starting_weapon: rusty_sword

@@ -5,9 +5,22 @@ from typing import Optional
 class Weapon:
     """Player weapon stats
     """
+
+    # damage = base_damage * modifier
+
+    # modifier:
+    #   if qte == red then 0.0
+    #   elif qte == yellow then 1.0
+    #   else then weapon.crit_multiplier
+
+    # yellow zone width = weapon.accuracy / (weapon.accuracy + enemy_defense + 1.0)
+
     name: str
     base_damage: int
-    crit_multiplier: float = 1.6
+    accuracy: float = 1.0
+    attack_speed: float = 1.0 # TODO: should define qte freq
+    crit_chance: float = 0.2
+    crit_multiplier: float = 1.5
     stamina_cost: int = 10
     qte_speed_bonus: float = 0.0
 

@@ -6,66 +6,21 @@ graphics:
   screen_height: 1024
   fps: 60
 
-# PATHS
-
-# PLAYER
-player:
-  attributes:
-    hp_max: 30
-    defense: 3
-    stamina_max: 100
-  starting_weapon: # should be defind in another config file, stats loads by name
-    name: "Rusty Sword"
-    base_damage: 5
-    crit_multiplier: 1.6
-    stamina_cost: 10
-    qte_speed_bonus: 0
-
 # COMBAT
 combat:
   qte:
     base_speed: 420
+    base_crit_chance: 0.2
     acceleration: 0.0
     green_offset_pct: 0.0
     randomize_offset: true
     random_range: 0.85
-    green_crit_multiplier: 1.6
-    yellow_damage_coef: 0.75
     stamina_cost_on_miss: 5      # отдельно от оружия
     bar_width: 520
     bar_height: 48
 
-# ENEMIES
-enemies:
-  skeleton:
-    asset: "Skeleton.png"
-    hp_max: 50
-    damage: 1
-    difficulty: 1
-
-  strong_skeleton:
-    # asset: "Strong_Skeleton.png"
-    asset: "Skeleton.png"
-    hp_max: 50
-    damage: 1
-    difficulty: 2
-
-  meduza:
-    # asset: "Meduza.png"
-    asset: "Skeleton.png"
-    hp_max: 50
-    damage: 1
-    difficulty: 3
-
-  boss:
-    # asset: "Minotaur.png"
-    asset: "Skeleton.png"
-    hp_max: 50
-    damage: 1
-    difficulty: 4   # отдельный уровень
-
-spawn:
-  skeleton: 10
-  strong_skeleton: 10
-  meduza: 10
-  boss: 1
+# ENTITY CONFIGS
+enemies_conf: enemies.yaml
+items_conf: items.yaml
+level_conf: level.yaml
+player_conf: player.yaml

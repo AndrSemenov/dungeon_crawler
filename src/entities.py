@@ -140,7 +140,6 @@ class Player(Creature):
                  inventory: Optional[Inventory] = None,
                  attributes: Optional[Attributes] = None,
                  sprite_path: Optional[Path] = None,
-                 hp_max: int = 10,
                  x: int = 0,
                  y: int = 0,
                  direction: Direction = Direction.NORTH):
@@ -176,7 +175,7 @@ class Enemy(Creature):
                  damage: int,
                  asset: str,
                  defense: int = 0,
-                 attack_speed: float = 1.8,
+                 attack_speed: float = 3.0,
                  base_attack_probability: float = 0.01, # TODO: refactor
                  x: int = 0,
                  y: int = 0,

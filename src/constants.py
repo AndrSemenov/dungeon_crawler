@@ -7,10 +7,15 @@ from pathlib import Path
 
 ROOT_PATH = Path(__file__).parent.parent
 ASSETS_PATH = ROOT_PATH / "data/assets"
-CONFIG_PATH = ROOT_PATH / "configs/default.yaml"
+SETTINGS_PATH = ROOT_PATH / "configs/default.yaml"
+CONFIGS_PATH = ROOT_PATH / "data/configs"
 
-with CONFIG_PATH.open(encoding="utf-8") as f:
+with SETTINGS_PATH.open(encoding="utf-8") as f:
     config = yaml.safe_load(f)
+
+for conf in ["enemies", "items", "level", "player"]:
+    with (CONFIGS_PATH / f"{conf}.yaml").open(encoding="utf-8") as f:
+        config.update(yaml.safe_load(f))
 
 # LOGGING
 LOG_LEVEL = "DEBUG"
@@ -27,15 +32,8 @@ SCREEN_WIDTH: int = config["graphics"]["screen_width"]
 SCREEN_HEIGHT: int = config["graphics"]["screen_height"]
 FPS: int = config["graphics"]["fps"]
 
-# LOAD LEVEL
-# TODO: get from map generator
+# LEVEL
 MAP: list[list[int]] = map_gen.MazeGenerator(25, 75).maze
-
-# Expample
-# MAP_SEED = 1337
-# MAP_SIZE = (10, 10)
-# MAP_LABYTINTH = True
-# MAP = generate_map(MAP_SEED, MAP_SIZE, MAP_LABYTINTH)
 
 MAP_SPRITES: dict[str, dict[str, Path]] = {
     "hallway": {
@@ -71,8 +69,9 @@ MAP_SPRITES: dict[str, dict[str, Path]] = {
     }
 }
 
+
+
 # LOAD ENEMIES
-# TODO: get from map config
 ENEMIES = map_gen.EnemyGenerator(MAP, config).generate()
 
 # LOAD PLAYER
@@ -89,12 +88,6 @@ DEFAULT_ATTRIBUTES = PLAYER_CONFIG.get("attributes", {
     "stamina_max": 100,
 })
 
-DEFAULT_WEAPON = PLAYER_CONFIG.get("starting_weapon", {
-    "name": "Rusty Sword",
-    "base_damage": 5,
-    "crit_multiplier": 1.6,
-    "stamina_cost": 10,
-    "qte_speed_bonus": 0.0
-})
+DEFAULT_WEAPON = config.get("weapons", {}).get(PLAYER_CONFIG.get("starting_weapon", "rusty_sword"))
 
 QTE_CONFIG = config.get("combat", {}).get("qte", {})

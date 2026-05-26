@@ -1,0 +1,9 @@
+weapons:
+  rusty_sword:
+    name: "Rusty Sword"
+    accuracy: 1.0
+    attack_speed:
+    base_damage: 5
+    crit_multiplier: 1.6
+    stamina_cost: 10
+    qte_speed_bonus: 0

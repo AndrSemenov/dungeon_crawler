@@ -1,9 +1,0 @@
-LEVEL:
-  MAP_SIZE: 25
-  ...
-
-ENEMIES:
-  NUM_ENEMIES: 10
-  TYPES:
-    EASY: skeleton
-    HARD: meduza

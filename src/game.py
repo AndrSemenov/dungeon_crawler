@@ -1,18 +1,17 @@
 import pygame
 import random
 
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, LOG_LEVEL, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, logger
+from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, logger
 from src.entities import Player, Enemy
 from src.level import Level
 from src.render import GameRenderer, SpriteBase
 from src.input_handler import InputHandler
-from src.states import ExplorationState, CombatState, GameState
+from src.states import ExplorationState, GameState
 
 class Game:
     def __init__(self):
         # init graphics
         self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # TODO: mb move to renderer
-        # self.screen.fill((0, 0, 0))
         pygame.display.set_caption("Taurus project")
         self.clock = pygame.time.Clock()
 

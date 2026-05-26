@@ -26,17 +26,17 @@ class TimingBar:
         self.yellow_left = pygame.Rect(0, 0, 0, 0)
         self.yellow_right = pygame.Rect(0, 0, 0, 0)
 
-    def start(self, player_attack: int, enemy_defense: int, weapon: Weapon):
+    def start(self, enemy_defense: int, weapon: Weapon):
 
         self.active = True
         self.cursor_x = self.rect.left
         self.direction = 1
         self.speed = self.config.base_speed + weapon.qte_speed_bonus
+        self.weapon_crit_multiplier = weapon.crit_multiplier
 
-        # Расчёт зон успеха
-        base_hit = player_attack / (player_attack + enemy_defense + 1.0)
-        hit_chance = min(0.95, base_hit * 0.9)
-        crit_chance = 0.22  # базовый шанс крита
+        base_hit = weapon.accuracy / (weapon.accuracy + enemy_defense + 1.0)
+        hit_chance = min(0.95, base_hit) # * 0.9)
+        crit_chance = weapon.crit_chance
 
         green_width = self.rect.width * hit_chance * crit_chance
         yellow_width = self.rect.width * (hit_chance - crit_chance)
@@ -73,10 +73,10 @@ class TimingBar:
 
         if cursor_rect.colliderect(self.green_rect):
             result = "green"
-            multiplier = self.config.green_crit_multiplier
+            multiplier = self.weapon_crit_multiplier
         elif cursor_rect.colliderect(self.yellow_left) or cursor_rect.colliderect(self.yellow_right):
             result = "yellow"
-            multiplier = self.config.yellow_damage_coef
+            multiplier = 1.0
         else:
             result = "red"
             multiplier = 0.0
@@ -84,6 +84,7 @@ class TimingBar:
         self.active = False
         return result, multiplier
 
+    # TODO: move to render
     def draw(self, surface: pygame.Surface):
         if not self.active:
             return
