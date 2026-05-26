@@ -16,7 +16,10 @@ class Game:
         pygame.display.set_caption("Taurus project")
         self.clock = pygame.time.Clock()
 
-        self.player = Player(x=PLAYER_START_POS[0], y=PLAYER_START_POS[1])
+        self.player = Player(
+            x=PLAYER_START_POS[0],
+            y=PLAYER_START_POS[1]
+        )
         self.map = MAP
         self.sprites = {textures: {texture_name: SpriteBase(texture_path) for texture_name, texture_path in pack.items()} for textures, pack in MAP_SPRITES.items()}
         self.enemies = [Enemy(**e) for e in ENEMIES]

@@ -80,3 +80,21 @@ ENEMIES = map_gen.EnemyGenerator(MAP, config).generate()
 PLAYER_START_POS = pos = next((i, j) for i, row in enumerate(MAP)
                     for j, val in enumerate(row)
                     if val == 1)
+
+PLAYER_CONFIG = config.get("player", {})
+
+DEFAULT_ATTRIBUTES = PLAYER_CONFIG.get("attributes", {
+    "hp_max": 30,
+    "defense": 3,
+    "stamina_max": 100,
+})
+
+DEFAULT_WEAPON = PLAYER_CONFIG.get("starting_weapon", {
+    "name": "Rusty Sword",
+    "base_damage": 5,
+    "crit_multiplier": 1.6,
+    "stamina_cost": 10,
+    "qte_speed_bonus": 0.0
+})
+
+QTE_CONFIG = config.get("combat", {}).get("qte", {})

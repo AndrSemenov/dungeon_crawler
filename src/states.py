@@ -8,6 +8,7 @@ from src.entities import Enemy
 from src.constants import logger
 from src.input_handler import InputAction
 from src.behaviors.approach import ApproachProcess
+from src.combat.qte import TimingBar
 
 if TYPE_CHECKING:
     from src.game import Game
@@ -167,24 +168,31 @@ class CombatState(GameState):
         self.enemy = enemy
         self.last_enemy_attack_time = time.time()
 
+        self.qte = TimingBar(self.game.screen)
+        self.last_qte_result = None
+
     def on_enter(self) -> None:
         if self.enemy:
             logger.info(f"→ Entered combat with {self.enemy.name} [{self.enemy.id}]")
         self.last_enemy_attack_time = time.time()
+        self.last_qte_result = None
 
     def handle_action(self, action: str) -> bool:
-        if action == InputAction.ATTACK and self.enemy:
-            logger.info(f"Player attacks {self.enemy.name}!")
-            damage = self.level.player.attack()
-            self.enemy.get_damage(damage)
+        if action == InputAction.ATTACK and self.enemy and self.enemy.alive:
+            if not self.qte.active:
+                # Запускаем QTE
+                player_attack = self.level.player.attack()
+                enemy_defense = self.enemy.defense if hasattr(self.enemy, 'defense') else 2
 
-            if not self.enemy.alive:
-                logger.info(f"{self.enemy.name} died!")
-                self.level.remove_entity(self.enemy)
-                self.game.change_state(ExplorationState(self.game))
+                weapon = self.level.player.inventory.current_weapon
+                self.qte.start(player_attack, enemy_defense, weapon)
+                logger.info(f"QTE started against {self.enemy.name}")
                 return True
-
-            return True
+            else:
+                # Игрок нажал атаку во время активного QTE — фиксируем результат
+                result, multiplier = self.qte.stop()
+                self._apply_qte_result(result, multiplier)
+                return True
 
         elif action == InputAction.MOVE_BACKWARD:
             logger.info("Retreated from combat")
@@ -193,32 +201,68 @@ class CombatState(GameState):
 
         return False
 
+    def _apply_qte_result(self, result: str, multiplier: float):
+        """Применяем результат QTE к урону"""
+        if not self.enemy:
+            return
+
+        player = self.level.player
+        base_damage = player.attack()
+
+        if result == "green":
+            damage = int(base_damage * multiplier)
+            logger.info(f"CRITICAL HIT! {damage} damage to {self.enemy.name}")
+        elif result == "yellow":
+            damage = int(base_damage * multiplier)
+            logger.info(f"Solid hit for {damage} damage")
+        else:  # red
+            damage = 0
+            logger.info("Missed attack!")
+
+        if damage > 0:
+            self.enemy.get_damage(damage)
+
+        if not self.enemy.alive:
+            logger.info(f"{self.enemy.name} died!")
+            self.level.remove_entity(self.enemy)
+            self.game.change_state(ExplorationState(self.game))
+
     def update(self, dt: float) -> None:
-        """Автоматическая атака врага каждые ~1.8 секунды"""
+        """Автоматическая атака врага + обновление QTE"""
         if not self.enemy or not self.enemy.alive:
             return
 
+        # Обновляем QTE
+        self.qte.update(dt)
+
+        # Автоатака врага
         now = time.time()
-        if now - self.last_enemy_attack_time >= 1.8: # TODO: must be param defined by amount of enemy attacks in turn + random
-            damage = self.enemy.attack()
+        if now - self.last_enemy_attack_time >= self.enemy.attack_speed:
+            damage = self.enemy.damage
             self.level.player.get_damage(damage)
             logger.info(f"{self.enemy.name} attacks player for {damage} damage!")
 
             self.last_enemy_attack_time = now
 
-            # Если игрок умер — конец боя
+            # Если игрок умер
             if not self.level.player.alive:
                 logger.info("Player died!")
                 self._end_combat(game_over=True)
 
     def _end_combat(self, game_over: bool = False):
         if self.enemy and not self.enemy.alive:
-            logger.info(f"{self.enemy.name} died! Removing from level.")
             self.level.remove_entity(self.enemy)
 
         if game_over:
             logger.info("GAME OVER")
-            # TODO: позже сделаем экран смерти
             self.game.running = False
         else:
             self.game.change_state(ExplorationState(self.game))
+
+    def render(self) -> None:
+        """Рендер боя + QTE полосы"""
+        self.game.renderer.render()  # базовый рендер уровня
+
+        # Дополнительно рисуем QTE поверх всего
+        if self.qte.active:
+            self.qte.draw(self.game.screen)

@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from src.constants import logger
 from src.render import SpriteEntity
-from src.utils.rpg import Inventory, Attributes
+from src.utils.rpg import Inventory, Attributes, Weapon
 from src.utils.directions import Direction, DIRECTION_VECTORS
 from src.behaviors.approach import ApproachProcess
 from src.level import Level
@@ -41,18 +41,18 @@ class Creature(Entity):
     """
     def __init__(self,
                  sprite_path: Optional[Path],
-                 hp_max: int, # TODO: should be hp_max, hp_current, probably defined somewhere else
+                 attributes: Attributes,
                  x: int = 0,
                  y: int = 0,
                  direction: Direction = Direction.NORTH):
 
         super().__init__(x=x, y=y, sprite_path=sprite_path)
+
         self.name = "Base creature"
 
-        self.hp_max = hp_max
-        self.hp_current = hp_max
+        self.attributes = attributes
 
-        if self.hp_current > 0:
+        if self.attributes.hp_current > 0:
             self.alive = True
         else:
             self.alive = False
@@ -71,17 +71,17 @@ class Creature(Entity):
         assert self.alive, f"{self.name} [{self.id}] should be alive to take damage!"
         logger.debug(f"Entity (id={self.id}, name={self.name}) change hp by {amount}")
         if amount > 0:
-            self.hp_current -= amount
+            self.attributes.hp_current -= amount
         self.alive_check()
 
     def alive_check(self) -> None:
-        if self.hp_current <= 0 and self.alive:
+        if self.attributes.hp_current <= 0 and self.alive:
             logger.info(f"{self.name} [{self.id}] has died")
             self.alive = False
 
     @property
     def health(self) -> tuple[int, int]:
-        return self.hp_current, self.hp_max
+        return self.attributes.hp_current, self.attributes.hp_max
 
     def try_move(self, level: Level, dx: int, dy: int) -> bool:
         """
@@ -136,15 +136,26 @@ class Creature(Entity):
 class Player(Creature):
     """Player class. Acting with inventory
     """
-    def __init__(self ,
-                 inventory: Inventory = Inventory(),
-                 attributes: Attributes = Attributes(),
+    def __init__(self,
+                 inventory: Optional[Inventory] = None,
+                 attributes: Optional[Attributes] = None,
                  sprite_path: Optional[Path] = None,
                  hp_max: int = 10,
                  x: int = 0,
                  y: int = 0,
                  direction: Direction = Direction.NORTH):
-        super().__init__(x=x, y=y, direction=direction, sprite_path=sprite_path, hp_max=hp_max)
+
+        from src.constants import DEFAULT_ATTRIBUTES, DEFAULT_WEAPON
+
+        if attributes is None:
+            attributes = Attributes(**DEFAULT_ATTRIBUTES)
+
+        if inventory is None:
+            weapon = Weapon(**DEFAULT_WEAPON)
+            inventory = Inventory(current_weapon=weapon)
+
+        super().__init__(attributes=attributes, sprite_path=sprite_path, x=x, y=y, direction=direction)
+
         self.name = "Player"
         self.inventory = inventory
 
@@ -164,17 +175,23 @@ class Enemy(Creature):
                  hp_max: int,
                  damage: int,
                  asset: str,
+                 defense: int = 0,
+                 attack_speed: float = 1.8,
                  base_attack_probability: float = 0.01, # TODO: refactor
                  x: int = 0,
                  y: int = 0,
                  sprite_root_dir: Path = Path("data/assets/enemies")
                  ):
+        attributes = Attributes(
+            hp_max=hp_max,
+            defense=defense
+        )
+        super().__init__(attributes=attributes, sprite_path=sprite_root_dir / asset, x=x, y=y)
 
-        super().__init__(x=x, y=y, sprite_path=sprite_root_dir / asset, hp_max=hp_max)
         self.name = name
+        self.damage = damage          # базовый урон врага
+        self.attack_speed = attack_speed
         self.approach: Optional[ApproachProcess] = None
-        self.damage = damage
-        self.base_attack_probability = base_attack_probability
 
         self.combat_state = {
             "charging": False,
