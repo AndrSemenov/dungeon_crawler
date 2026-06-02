@@ -122,6 +122,9 @@ class EnemyGenerator:
         """Случайные позиции в зоне сложности"""
         positions = []
 
+        exceptions = ((0, 0), (0, 1), (1, 0), (1, 1),
+                     (self.width - 1, self.height - 1), (self.width - 1, self.height - 2), (self.width - 2, self.height - 1), (self.width - 2, self.height - 2))
+
         zone_min_x = self.zone_width * (difficulty - 1)
         zone_max_x = self.zone_width * difficulty
 
@@ -133,7 +136,7 @@ class EnemyGenerator:
             x = random.randint(zone_min_x, zone_max_x - 1)
             y = random.randint(0, self.height - 1)
 
-            if self.maze[x][y] == 1 and (y, x) not in positions:
+            if self.maze[x][y] == 1 and (y, x) not in positions and (y, x) not in exceptions:
                 positions.append((y, x))
 
             attempts += 1
