@@ -8,15 +8,13 @@ from src.level import Level
 from typing import Optional
 from pathlib import Path
 
+
 class Entity:
-    """Base class for any game object. Can be placed and rendered
-    """
+    """Base class for any game object. Can be placed and rendered"""
+
     _next_id = 0
 
-    def __init__(self,
-                 x: int = 0,
-                 y: int = 0,
-                 sprite_path: Optional[Path] = None):
+    def __init__(self, x: int = 0, y: int = 0, sprite_path: Optional[Path] = None):
         self.id = Entity._next_id
         Entity._next_id += 1
         self.name = "Base entity"
@@ -33,18 +31,22 @@ class Entity:
     def __str__(self) -> str:
         return f"{self.name, self.id}"
 
+
 class Item(Entity):
     pass
 
+
 class Creature(Entity):
-    """Base class for creature. Like entity but can take damage, die, move
-    """
-    def __init__(self,
-                 sprite_path: Optional[Path],
-                 attributes: Attributes,
-                 x: int = 0,
-                 y: int = 0,
-                 direction: Direction = Direction.NORTH):
+    """Base class for creature. Like entity but can take damage, die, move"""
+
+    def __init__(
+        self,
+        sprite_path: Optional[Path],
+        attributes: Attributes,
+        x: int = 0,
+        y: int = 0,
+        direction: Direction = Direction.NORTH,
+    ):
 
         super().__init__(x=x, y=y, sprite_path=sprite_path)
 
@@ -63,11 +65,12 @@ class Creature(Entity):
         return self.alive
 
     @abstractmethod
-    def attack(self) -> int:
-        ...
+    def attack(self) -> int: ...
 
     def get_damage(self, amount: int) -> None:
-        assert amount >= 0, f"{self.name} [{self.id}] should get positive amount of damage! Got {amount} damage"
+        assert (
+            amount >= 0
+        ), f"{self.name} [{self.id}] should get positive amount of damage! Got {amount} damage"
         assert self.alive, f"{self.name} [{self.id}] should be alive to take damage!"
         logger.debug(f"Entity (id={self.id}, name={self.name}) change hp by {amount}")
         if amount > 0:
@@ -92,13 +95,17 @@ class Creature(Entity):
         new_y = self.y + dy
 
         if not level.is_walkable(new_x, new_y):
-            logger.debug(f"{self.name} [{self.id}] tries to move and been blocked by wall at ({new_x}, {new_y})")
+            logger.debug(
+                f"{self.name} [{self.id}] tries to move and been blocked by wall at ({new_x}, {new_y})"
+            )
             return False
 
         creatures_there = level.get_creature_at(new_x, new_y)
 
         if creatures_there:
-            logger.debug(f"{self.name} [{self.id}] tries to move and found creature(s) at ({new_x}, {new_y}): {creatures_there}")
+            logger.debug(
+                f"{self.name} [{self.id}] tries to move and found creature(s) at ({new_x}, {new_y}): {creatures_there}"
+            )
             return False
 
         success = level.move_entity(self, new_x, new_y)
@@ -133,16 +140,19 @@ class Creature(Entity):
         dx, dy = DIRECTION_VECTORS[self.direction]
         return dx, dy
 
+
 class Player(Creature):
-    """Player class. Acting with inventory
-    """
-    def __init__(self,
-                 inventory: Optional[Inventory] = None,
-                 attributes: Optional[Attributes] = None,
-                 sprite_path: Optional[Path] = None,
-                 x: int = 0,
-                 y: int = 0,
-                 direction: Direction = Direction.NORTH):
+    """Player class. Acting with inventory"""
+
+    def __init__(
+        self,
+        inventory: Optional[Inventory] = None,
+        attributes: Optional[Attributes] = None,
+        sprite_path: Optional[Path] = None,
+        x: int = 0,
+        y: int = 0,
+        direction: Direction = Direction.NORTH,
+    ):
 
         from src.constants import DEFAULT_ATTRIBUTES, DEFAULT_WEAPON
 
@@ -153,7 +163,13 @@ class Player(Creature):
             weapon = Weapon(**DEFAULT_WEAPON)
             inventory = Inventory(current_weapon=weapon)
 
-        super().__init__(attributes=attributes, sprite_path=sprite_path, x=x, y=y, direction=direction)
+        super().__init__(
+            attributes=attributes,
+            sprite_path=sprite_path,
+            x=x,
+            y=y,
+            direction=direction,
+        )
 
         self.name = "Player"
         self.inventory = inventory
@@ -169,28 +185,34 @@ class Player(Creature):
 
 
 class Enemy(Creature):
-    def __init__(self,
-                 name: str,
-                 hp_max: int,
-                 damage: int,
-                 asset: str,
-                 defense: int = 0,
-                 attack_speed: float = 3.0,
-                 base_attack_probability: float = 0.01, # TODO: refactor
-                 x: int = 0,
-                 y: int = 0,
-                 sprite_root_dir: Path = Path("data/assets/enemies")
-                 ):
-        attributes = Attributes(
-            hp_max=hp_max,
-            defense=defense
+    def __init__(
+        self,
+        name: str,
+        hp_max: int,
+        damage: int,
+        asset: str,
+        defense: int = 0,
+        attack_speed: float = 3.0,
+        base_attack_probability: float = 0.01,
+        animation_config: Optional[dict] = None,
+        x: int = 0,
+        y: int = 0,
+        sprite_root_dir: Path = Path("data/assets/enemies"),
+    ):
+        attributes = Attributes(hp_max=hp_max, defense=defense)
+        super().__init__(
+            attributes=attributes, sprite_path=sprite_root_dir / asset, x=x, y=y
         )
-        super().__init__(attributes=attributes, sprite_path=sprite_root_dir / asset, x=x, y=y)
 
         self.name = name
-        self.damage = damage          # базовый урон врага
+        self.damage = damage
         self.attack_speed = attack_speed
         self.approach: Optional[ApproachProcess] = None
+        self.animation_config = animation_config
+
+        # Инициализируем анимацию если конфиг есть
+        if animation_config and self.sprite:
+            self._init_animation_from_config(animation_config, sprite_root_dir)
 
         self.combat_state = {
             "charging": False,
@@ -198,6 +220,27 @@ class Enemy(Creature):
             "in_combat": False,
             "advantage": 1.0,
         }
+
+    def _init_animation_from_config(self, config: dict, sprite_root_dir: Path) -> None:
+        """Инициализировать анимацию из конфига"""
+        if "idle" in config:
+            idle_config = config["idle"]
+            frames_pattern = idle_config.get("frames", [])
+            frame_duration = idle_config.get("duration", 0.1)
+
+            # Преобразуем пути
+            frame_paths = [sprite_root_dir / f for f in frames_pattern]
+
+            try:
+                self.sprite.init_animation(frame_paths, frame_duration=frame_duration)
+                logger.debug(
+                    f"Animation initialized for {self.name} "
+                    f"with {len(frame_paths)} frames"
+                )
+            except Exception as e:
+                logger.warning(
+                    f"Failed to initialize animation for " f"{self.name}: {e}"
+                )
 
     @property
     def charging(self) -> bool:
@@ -217,13 +260,7 @@ class Enemy(Creature):
 
     @property
     def attack_probability(self) -> float:
-        # Можно будет модифицировать в зависимости от состояния
         return self.base_attack_probability
-
-        # мб должно быть в какой-то отдельной логике типа паттернов поведения
-        # в этих классах хочется иметь только все, что относится к энитити
 
     def attack(self) -> int:
         return self.damage
-
-

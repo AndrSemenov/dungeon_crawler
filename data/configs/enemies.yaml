@@ -5,6 +5,14 @@ enemies:
     hp_max: 50
     damage: 1
     difficulty: 1
+    animation:
+      idle:
+        frames:
+          - "skeleton_idle/frame_0.png"
+          - "skeleton_idle/frame_1.png"
+          - "skeleton_idle/frame_2.png"
+          - "skeleton_idle/frame_3.png"
+        duration: 0.15
 
   strong_skeleton:
     # asset: "Strong_Skeleton.png"
@@ -12,6 +20,14 @@ enemies:
     hp_max: 50
     damage: 1
     difficulty: 2
+    animation:
+      idle:
+        frames:
+          - "skeleton_idle/frame_0.png"
+          - "skeleton_idle/frame_1.png"
+          - "skeleton_idle/frame_2.png"
+          - "skeleton_idle/frame_3.png"
+        duration: 0.15
 
   meduza:
     # asset: "Meduza.png"
@@ -19,10 +35,26 @@ enemies:
     hp_max: 50
     damage: 1
     difficulty: 3
+    animation:
+      idle:
+        frames:
+          - "skeleton_idle/frame_0.png"
+          - "skeleton_idle/frame_1.png"
+          - "skeleton_idle/frame_2.png"
+          - "skeleton_idle/frame_3.png"
+        duration: 0.15
 
   boss:
     # asset: "Minotaur.png"
     asset: "Skeleton.png"
     hp_max: 50
     damage: 1
-    difficulty: 4   # отдельный уровень
+    difficulty: 4
+    animation:
+      idle:
+        frames:
+          - "skeleton_idle/frame_0.png"
+          - "skeleton_idle/frame_1.png"
+          - "skeleton_idle/frame_2.png"
+          - "skeleton_idle/frame_3.png"
+        duration: 0.15

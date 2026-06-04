@@ -1,34 +1,46 @@
 import pygame
 import random
 
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, logger
+from src.constants import (
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    FPS,
+    MAP,
+    ENEMIES,
+    MAP_SPRITES,
+    PLAYER_START_POS,
+    logger,
+)
 from src.entities import Player, Enemy
 from src.level import Level
 from src.render import GameRenderer, SpriteBase
 from src.input_handler import InputHandler
 from src.states import ExplorationState, GameState
 
+
 class Game:
     def __init__(self):
         # init graphics
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # TODO: mb move to renderer
+        self.screen = pygame.display.set_mode(
+            (SCREEN_WIDTH, SCREEN_HEIGHT)
+        )  # TODO: mb move to renderer
         pygame.display.set_caption("Taurus project")
         self.clock = pygame.time.Clock()
 
-        self.player = Player(
-            x=PLAYER_START_POS[0],
-            y=PLAYER_START_POS[1]
-        )
+        self.player = Player(x=PLAYER_START_POS[0], y=PLAYER_START_POS[1])
         self.map = MAP
-        self.sprites = {textures: {texture_name: SpriteBase(texture_path) for texture_name, texture_path in pack.items()} for textures, pack in MAP_SPRITES.items()}
+        self.sprites = {
+            textures: {
+                texture_name: SpriteBase(texture_path)
+                for texture_name, texture_path in pack.items()
+            }
+            for textures, pack in MAP_SPRITES.items()
+        }
         self.enemies = [Enemy(**e) for e in ENEMIES]
 
         # init level
         self.level = Level(
-            player=self.player,
-            map=self.map,
-            sprites=self.sprites,
-            enemies=self.enemies
+            player=self.player, map=self.map, sprites=self.sprites, enemies=self.enemies
         )
 
         # init renderer
@@ -56,7 +68,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
-                elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                elif event.type == pygame.KEYDOWN and event.key == (pygame.K_ESCAPE):
                     self.running = False
                 else:
                     if self.input_handler.process_event(event, self.current_state):
@@ -67,6 +79,14 @@ class Game:
             self.current_state.update(dt)
             if isinstance(self.current_state, ExplorationState):
                 self.current_state._update_approaches(dt)
+                # Обновляем анимацию всех врагов
+                for enemy in self.level.enemies:
+                    if (
+                        hasattr(enemy, "sprite")
+                        and enemy.sprite
+                        and hasattr(enemy.sprite, "update_animation")
+                    ):
+                        enemy.sprite.update_animation(dt)
 
             # Render
             self.current_state.render()

@@ -6,7 +6,7 @@ from src.level import Level
 # from src.entities import Enemy
 from src.constants import logger
 from pygame.surface import Surface
-from src.animation import AnimatedSprite
+from src.render.animation import AnimatedSprite
 from typing import Optional, List
 
 
@@ -81,7 +81,7 @@ class GameRenderer:
         self.minimap_size = 360
         self.minimap_padding = 2
         self.minimap_rect = pygame.Rect(
-            self.screen.get_width() - self.minimap_size - self.minimap_padding,
+            self.screen.get_width() - self.minimap_size - (self.minimap_padding),
             self.minimap_padding,
             self.minimap_size,
             self.minimap_size,
@@ -253,11 +253,11 @@ class GameRenderer:
             self.level.sprites["wall_front"]["wall_front"].draw(self.screen)
 
     def draw_entities(self):
-        """Рисует всех врагов с учётом Approach и спрайтовой анимации"""
+        """Рисует врагов с учётом Approach и спрайтовой анимации"""
         px, py = self.player.position
         dx, dy = self.player.direction_vectors
 
-        # Проверяем только видимые позиции (первая и вторая клетка впереди)
+        # Проверяем только видимые позиции (первая и вторая клетка)
         positions_to_check = [
             (px + 2 * dx, py + 2 * dy, 0.4, 0.15),  # дальняя клетка
             (px + dx, py + dy, 0.75, 0.5),  # ближняя клетка
@@ -303,30 +303,6 @@ class GameRenderer:
                     draw_y = self.center_y - frame_h // 2
                     self.screen.blit(frame, (draw_x, draw_y))
 
-    # def draw_entities(self):
-    #     # TODO: refactor
-    #     for depth, (fx, fy, base_scale, base_br) in enumerate([
-
-    #         (self.second_x, self.second_y, 0.4, 0.15),
-    #         (self.first_x, self.first_y, 0.75, 0.5)
-    #     ]):
-    #         for entity in self.level.get_entities_at(fx, fy):
-
-    #             # if isinstance(entity, Enemy) and entity.approach and entity.approach.active:
-    #             #     scale = entity.approach.current_scale
-    #             #     brightness = entity.approach.current_brightness
-    #             # else:
-    #             #     scale = base_scale
-    #             #     brightness = base_br
-
-    #             scale = base_scale
-    #             brightness = base_br
-
-    #             original = entity.sprite.get_dimmed_sprite(factor=brightness)
-    #             new_size = (int(original.get_width() * scale), int(original.get_height() * scale))
-    #             scaled = pygame.transform.scale(original, new_size)
-    #             self.screen.blit(scaled, (self.center_x - new_size[0]//2, self.center_y - new_size[1]//2))
-
     def draw_minimap(self):
         # Создаём временную поверхность
         minimap = pygame.Surface((self.minimap_size, self.minimap_size))
@@ -350,10 +326,6 @@ class GameRenderer:
                     color = self.color_wall
                 else:
                     color = self.color_floor
-
-                # Затемнение неисследованных клеток (если захочешь)
-                # if not self.level.explored[y][x]:
-                #     color = tuple(c // 3 for c in color)
 
                 rect = pygame.Rect(
                     offset_x + x * cell_size,
@@ -392,8 +364,6 @@ class GameRenderer:
 
     def render(self):
         self.get_field_of_view_state()
-        # logger.debug(f"Player pos: {self.player.position}, dir: {self.player.direction_vectors}")
-        # logger.debug(f"FOV: first({self.first_x},{self.first_y}), second({self.second_x},{self.second_y}), third({self.third_x},{self.third_y})")
         self.draw_hallways()
         self.draw_entities()
 

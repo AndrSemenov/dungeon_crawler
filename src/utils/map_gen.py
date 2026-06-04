@@ -1,6 +1,7 @@
 import random
 from collections import deque
 
+
 class MazeChecker:
 
     @staticmethod
@@ -21,9 +22,8 @@ class MazeChecker:
     @staticmethod
     def is_visitible(maze: list, x: int, y: int) -> bool:
         """Можно ли посетить точку"""
-        return (
-            MazeChecker.is_point_in_maze(maze, x, y)
-            and not MazeChecker.is_road(maze, x, y)
+        return MazeChecker.is_point_in_maze(maze, x, y) and not MazeChecker.is_road(
+            maze, x, y
         )
 
 
@@ -36,10 +36,7 @@ class MazeGenerator:
         self.maze = [[0] * width for _ in range(height)]
 
         # стартовая точка (по чётным координатам)
-        start_point = (
-            random.randrange(0, width, 2),
-            random.randrange(0, height, 2)
-        )
+        start_point = (random.randrange(0, width, 2), random.randrange(0, height, 2))
 
         self.to_visit = {start_point}
 
@@ -90,14 +87,17 @@ class EnemyGenerator:
 
                 if pos:
                     x, y = pos
-                    enemies.append({
-                        "name": enemy_name,
-                        "asset": enemy_data["asset"],
-                        "hp_max": enemy_data["hp_max"],
-                        "damage": enemy_data["damage"],
-                        "x": x,
-                        "y": y,
-                    })
+                    enemies.append(
+                        {
+                            "name": enemy_name,
+                            "asset": enemy_data["asset"],
+                            "hp_max": enemy_data["hp_max"],
+                            "damage": enemy_data["damage"],
+                            "x": x,
+                            "y": y,
+                            "animation_config": enemy_data.get("animation", None),
+                        }
+                    )
                 else:
                     print("⚠️ Не удалось найти позицию для босса")
 
@@ -107,14 +107,17 @@ class EnemyGenerator:
             positions = self._get_spawn_positions(difficulty, count)
 
             for x, y in positions:
-                enemies.append({
-                    "name": enemy_name,
-                    "asset": enemy_data["asset"],
-                    "hp_max": enemy_data["hp_max"],
-                    "damage": enemy_data["damage"],
-                    "x": x,
-                    "y": y,
-                })
+                enemies.append(
+                    {
+                        "name": enemy_name,
+                        "asset": enemy_data["asset"],
+                        "hp_max": enemy_data["hp_max"],
+                        "damage": enemy_data["damage"],
+                        "x": x,
+                        "y": y,
+                        "animation_config": enemy_data.get("animation", None),
+                    }
+                )
 
         return enemies
 
@@ -122,8 +125,16 @@ class EnemyGenerator:
         """Случайные позиции в зоне сложности"""
         positions = []
 
-        exceptions = ((0, 0), (0, 1), (1, 0), (1, 1),
-                     (self.width - 1, self.height - 1), (self.width - 1, self.height - 2), (self.width - 2, self.height - 1), (self.width - 2, self.height - 2))
+        exceptions = (
+            (0, 0),
+            (0, 1),
+            (1, 0),
+            (1, 1),
+            (self.width - 1, self.height - 1),
+            (self.width - 1, self.height - 2),
+            (self.width - 2, self.height - 1),
+            (self.width - 2, self.height - 2),
+        )
 
         zone_min_x = self.zone_width * (difficulty - 1)
         zone_max_x = self.zone_width * difficulty
@@ -136,13 +147,19 @@ class EnemyGenerator:
             x = random.randint(zone_min_x, zone_max_x - 1)
             y = random.randint(0, self.height - 1)
 
-            if self.maze[x][y] == 1 and (y, x) not in positions and (y, x) not in exceptions:
+            if (
+                self.maze[x][y] == 1
+                and (y, x) not in positions
+                and (y, x) not in exceptions
+            ):
                 positions.append((y, x))
 
             attempts += 1
 
         if len(positions) < count:
-            print(f"⚠️ Смогли заспавнить только {len(positions)} из {count} врагов сложности {difficulty}")
+            print(
+                f"⚠️ Смогли заспавнить только {len(positions)} из {count} врагов сложности {difficulty}"
+            )
 
         return positions
 
