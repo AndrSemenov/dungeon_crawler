@@ -1,10 +1,14 @@
 from __future__ import annotations
 import pygame
 from pathlib import Path
+from typing import TYPE_CHECKING, List, Tuple
+
 from src.level import Level
-# from src.entities import Enemy
 from src.constants import logger
 from pygame.surface import Surface
+
+if TYPE_CHECKING:
+    from src.entities import Enemy, Entity
 
 class SpriteBase:
     def __init__(self, image_path: Path):
@@ -168,67 +172,18 @@ class GameRenderer:
             self.level.sprites["wall_front"]["wall_front"].draw(self.screen)
 
     def draw_entities(self):
-        """Рисует всех врагов с учётом Approach анимации"""
-        px, py = self.player.position
-        dx, dy = self.player.direction_vectors
+        for entity, depth in self.get_visible_entities():
+            params = entity.get_render_params(depth)
 
-        # Проверяем только видимые позиции (первая и вторая клетка впереди)
-        positions_to_check = [
-            (px + 2*dx, py + 2*dy, 0.4, 0.15),   # дальняя клетка
-            (px + dx, py + dy, 0.75, 0.5),      # ближняя клетка
-        ]
+            original = entity.sprite.get_dimmed_sprite(factor=params["brightness"])
+            new_size = (int(original.get_width() * params["scale"]),
+                        int(original.get_height() * params["scale"]))
+            scaled = pygame.transform.scale(original, new_size)
 
-        for world_x, world_y, base_scale, base_brightness in positions_to_check:
-            for entity in self.level.get_entities_at(world_x, world_y):
-                if not hasattr(entity, 'sprite') or entity.sprite is None:
-                    continue
+            draw_x = self.center_x - new_size[0] // 2
+            draw_y = self.center_y - new_size[1] // 2
 
-                # === APPROACH АНИМАЦИЯ ===
-                scale = base_scale
-                brightness = base_brightness
-
-                if hasattr(entity, 'approach') and entity.approach and entity.approach.active:
-                    scale = entity.approach.current_scale
-                    brightness = entity.approach.current_brightness
-                    # logger.debug(f"Approach active for {entity.name}: scale={scale:.2f}, brightness={brightness:.2f}")
-
-                # Берём спрайт и применяем яркость
-                original = entity.sprite.get_dimmed_sprite(factor=brightness)
-
-                # Масштабируем
-                new_size = (int(original.get_width() * scale),
-                            int(original.get_height() * scale))
-                scaled = pygame.transform.scale(original, new_size)
-
-                # Центрируем на экране
-                draw_x = self.center_x - new_size[0] // 2
-                draw_y = self.center_y - new_size[1] // 2
-
-                self.screen.blit(scaled, (draw_x, draw_y))
-
-    # def draw_entities(self):
-    #     # TODO: refactor
-    #     for depth, (fx, fy, base_scale, base_br) in enumerate([
-
-    #         (self.second_x, self.second_y, 0.4, 0.15),
-    #         (self.first_x, self.first_y, 0.75, 0.5)
-    #     ]):
-    #         for entity in self.level.get_entities_at(fx, fy):
-
-    #             # if isinstance(entity, Enemy) and entity.approach and entity.approach.active:
-    #             #     scale = entity.approach.current_scale
-    #             #     brightness = entity.approach.current_brightness
-    #             # else:
-    #             #     scale = base_scale
-    #             #     brightness = base_br
-
-    #             scale = base_scale
-    #             brightness = base_br
-
-    #             original = entity.sprite.get_dimmed_sprite(factor=brightness)
-    #             new_size = (int(original.get_width() * scale), int(original.get_height() * scale))
-    #             scaled = pygame.transform.scale(original, new_size)
-    #             self.screen.blit(scaled, (self.center_x - new_size[0]//2, self.center_y - new_size[1]//2))
+            self.screen.blit(scaled, (draw_x, draw_y))
 
     def draw_minimap(self):
         # Создаём временную поверхность
@@ -296,3 +251,22 @@ class GameRenderer:
 
         # Миникарта в правом верхнем углу
         self.draw_minimap()
+
+    def get_visible_entities(self) -> List[Tuple['Entity', int]]:
+        px, py = self.player.position
+        dx, dy = self.player.direction_vectors
+        visible = []
+
+        for depth in [1, 2]:
+            wx = px + depth * dx
+            wy = py + depth * dy
+
+            if not self.level.is_walkable(wx, wy):
+                break
+
+            for entity in self.level.get_entities_at(wx, wy):
+                if entity is self.player or not getattr(entity, 'is_renderable', False):
+                    continue
+                visible.append((entity, depth))
+
+        return visible

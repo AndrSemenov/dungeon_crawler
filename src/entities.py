@@ -33,6 +33,16 @@ class Entity:
     def __str__(self) -> str:
         return f"{self.name, self.id}"
 
+    @property
+    def is_renderable(self) -> bool:
+        return self.sprite is not None
+
+    def get_render_params(self, depth: int) -> dict:
+        return {
+            "scale": 0.75 if depth == 1 else 0.4,
+            "brightness": 0.5 if depth == 1 else 0.15,
+        }
+
 class Item(Entity):
     pass
 
@@ -225,5 +235,14 @@ class Enemy(Creature):
 
     def attack(self) -> int:
         return self.damage
+
+    def get_render_params(self, depth: int) -> dict:
+        params = super().get_render_params(depth)
+
+        if self.approach and self.approach.active:
+            params["scale"] = self.approach.current_scale
+            params["brightness"] = self.approach.current_brightness
+
+        return params
 
 

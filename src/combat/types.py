@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 @dataclass
 class QTEConfig:
-    base_speed: float = 420.0
+    base_speed: float = 4200.0
     base_crit_chance: float = 0.2
     acceleration: float = 0.0
     green_offset_pct: float = 0.0

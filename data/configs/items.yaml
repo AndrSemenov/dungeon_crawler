@@ -1,7 +1,7 @@
 weapons:
   rusty_sword:
     name: "Rusty Sword"
-    accuracy: 1.0
+    accuracy: 0.2
     attack_speed:
     base_damage: 5
     crit_multiplier: 1.6

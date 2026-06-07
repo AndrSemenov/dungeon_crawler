@@ -9,7 +9,7 @@ graphics:
 # COMBAT
 combat:
   qte:
-    base_speed: 420
+    base_speed: 2000
     base_crit_chance: 0.2
     acceleration: 0.0
     green_offset_pct: 0.0

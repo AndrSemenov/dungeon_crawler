@@ -1,5 +1,4 @@
 import pygame
-import random
 
 from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, logger
 from src.entities import Player, Enemy
@@ -7,11 +6,16 @@ from src.level import Level
 from src.render import GameRenderer, SpriteBase
 from src.input_handler import InputHandler
 from src.states import ExplorationState, GameState
+from src.utils.config import load_config
+
 
 class Game:
-    def __init__(self):
+    def __init__(self, config_overrides: dict = {}):
+        """Инициализация игры с возможностью переопределения конфигов"""
+        config = load_config(config_overrides)
+
         # init graphics
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT)) # TODO: mb move to renderer
+        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption("Taurus project")
         self.clock = pygame.time.Clock()
 
@@ -20,7 +24,13 @@ class Game:
             y=PLAYER_START_POS[1]
         )
         self.map = MAP
-        self.sprites = {textures: {texture_name: SpriteBase(texture_path) for texture_name, texture_path in pack.items()} for textures, pack in MAP_SPRITES.items()}
+        self.sprites = {
+            textures: {
+                texture_name: SpriteBase(texture_path)
+                for texture_name, texture_path in pack.items()
+            }
+            for textures, pack in MAP_SPRITES.items()
+        }
         self.enemies = [Enemy(**e) for e in ENEMIES]
 
         # init level
@@ -79,4 +89,4 @@ class Game:
         self.current_state.on_exit()
         self.current_state = new_state
         self.current_state.on_enter()
-        logger.info(f"Entering state: {GameState}")
+        logger.info(f"Entering state: {type(self.current_state).__name__}")
