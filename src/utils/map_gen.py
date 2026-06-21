@@ -95,6 +95,7 @@ class EnemyGenerator:
                         "asset": enemy_data["asset"],
                         "hp_max": enemy_data["hp_max"],
                         "damage": enemy_data["damage"],
+                        "animations": enemy_data.get("animations"),
                         "x": x,
                         "y": y,
                     })
@@ -112,6 +113,7 @@ class EnemyGenerator:
                     "asset": enemy_data["asset"],
                     "hp_max": enemy_data["hp_max"],
                     "damage": enemy_data["damage"],
+                    "animations": enemy_data.get("animations"),
                     "x": x,
                     "y": y,
                 })

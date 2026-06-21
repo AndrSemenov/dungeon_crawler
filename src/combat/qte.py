@@ -6,13 +6,12 @@ from src.constants import QTE_CONFIG
 
 
 class TimingBar:
-    def __init__(self, screen: pygame.Surface, config: QTEConfig = None):
-        self.screen = screen
+    def __init__(self, screen_width: int, screen_height: int, config: QTEConfig = None):
         self.config = config or QTEConfig(**QTE_CONFIG)
 
         self.rect = pygame.Rect(
-            (screen.get_width() - self.config.bar_width) // 2,
-            screen.get_height() // 2 + 100,
+            (screen_width - self.config.bar_width) // 2,
+            screen_height // 2 + 100,
             self.config.bar_width,
             self.config.bar_height
         )
@@ -27,7 +26,6 @@ class TimingBar:
         self.yellow_right = pygame.Rect(0, 0, 0, 0)
 
     def start(self, enemy_defense: int, weapon: Weapon):
-
         self.active = True
         self.cursor_x = self.rect.left
         self.direction = 1
@@ -35,13 +33,12 @@ class TimingBar:
         self.weapon_crit_multiplier = weapon.crit_multiplier
 
         base_hit = weapon.accuracy / (weapon.accuracy + enemy_defense + 1.0)
-        hit_chance = min(0.95, base_hit) # * 0.9)
+        hit_chance = min(0.95, base_hit)
         crit_chance = weapon.crit_chance
 
         green_width = self.rect.width * hit_chance * crit_chance
         yellow_width = self.rect.width * (hit_chance - crit_chance)
 
-        # Смещение зелёной зоны
         offset = random.uniform(-self.config.random_range, self.config.random_range) \
             if self.config.randomize_offset else self.config.green_offset_pct
 
@@ -65,7 +62,6 @@ class TimingBar:
             self.direction = -1
 
     def stop(self) -> tuple[str, float]:
-        """Возвращает (result, damage_multiplier)"""
         if not self.active:
             return "red", 0.0
 
@@ -83,21 +79,3 @@ class TimingBar:
 
         self.active = False
         return result, multiplier
-
-    # TODO: move to render
-    def draw(self, surface: pygame.Surface):
-        if not self.active:
-            return
-
-        # Фон полосы
-        pygame.draw.rect(surface, (80, 20, 20), self.rect)
-
-        # Зоны
-        pygame.draw.rect(surface, (255, 200, 0), self.yellow_left)
-        pygame.draw.rect(surface, (255, 200, 0), self.yellow_right)
-        pygame.draw.rect(surface, (0, 255, 100), self.green_rect)
-
-        # Курсор
-        pygame.draw.rect(surface, (255, 255, 255),
-                        (self.cursor_x, self.rect.top - 8, 12, self.rect.height + 16),
-                        border_radius=4)

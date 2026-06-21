@@ -187,6 +187,7 @@ class Enemy(Creature):
                  defense: int = 0,
                  attack_speed: float = 3.0,
                  base_attack_probability: float = 0.01, # TODO: refactor
+                 animations: Optional[dict] = None,
                  x: int = 0,
                  y: int = 0,
                  sprite_root_dir: Path = Path("data/assets/enemies")
@@ -198,9 +199,37 @@ class Enemy(Creature):
         super().__init__(attributes=attributes, sprite_path=sprite_root_dir / asset, x=x, y=y)
 
         self.name = name
-        self.damage = damage          # базовый урон врага
+        self.damage = damage
         self.attack_speed = attack_speed
+        self.attack_windup: float = 0.0  # duration of attack windup frame, set from animation config
         self.approach: Optional[ApproachProcess] = None
+
+        if animations and self.sprite:
+            self._load_animations(animations, sprite_root_dir)
+
+    def _load_animations(self, config: dict, sprite_root_dir: Path) -> None:
+        import pygame
+        from src.animation import Animation, AnimationFrame, Animator
+
+        animator = Animator()
+        for anim_name, anim_cfg in config.items():
+            frame_duration = anim_cfg.get("frame_duration", 0.2)
+            loop = anim_cfg.get("loop", True)
+            frames = []
+            for filename in anim_cfg.get("frames", []):
+                path = sprite_root_dir / filename
+                try:
+                    surface = pygame.image.load(str(path)).convert_alpha()
+                    frames.append(AnimationFrame(surface=surface, duration=frame_duration))
+                except Exception as e:
+                    logger.warning(f"Failed to load animation frame {path}: {e}")
+
+            if frames:
+                animator.add(anim_name, Animation(frames, loop=loop))
+                if anim_name == "attack":
+                    self.attack_windup = frame_duration
+
+        self.sprite.animator = animator
 
         self.combat_state = {
             "charging": False,

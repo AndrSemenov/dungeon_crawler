@@ -26,8 +26,8 @@ class GameState(ABC):
     def update(self, dt: float) -> None:
         pass
 
-    def render(self) -> None:
-        self.game.renderer.render()
+    def render(self, dt: float = 0.0) -> None:
+        self.game.renderer.render(dt=dt)
 
     def on_enter(self) -> None:
         pass
@@ -147,16 +147,23 @@ class ExplorationState(GameState):
                     )
                     approach.start()
                     enemy.approach = approach
+                    if enemy.sprite and enemy.sprite.animator:
+                        enemy.sprite.animator.play("approach")
                     logger.info(f"{enemy.name} starts APPROACH from 2 cells away!")
 
     # TODO: какое-то говно, нужно сделать отдельный апдейтер для всех процессов, которые могут происходить в игре
     def _update_approaches(self, dt: float):
         """Вызывается каждый кадр — обновляет все активные approach"""
         for enemy in self.level.enemies:
+            if enemy.sprite and enemy.sprite.animator:
+                enemy.sprite.animator.update(dt)
+
             if hasattr(enemy, 'approach') and enemy.approach and enemy.approach.active:
                 enemy.approach.update(dt)
 
                 if enemy.approach.completed:
+                    if enemy.sprite and enemy.sprite.animator:
+                        enemy.sprite.animator.stop()
                     logger.info(f"{enemy.name} finished approach → starting combat!")
                     self.level.move_entity(enemy, enemy.approach.target_x, enemy.approach.target_y)
                     self.game.change_state(CombatState(self.game, enemy))
@@ -167,8 +174,10 @@ class CombatState(GameState):
         super().__init__(game)
         self.enemy = enemy
         self.last_enemy_attack_time = time.time()
+        self.pending_damage_at: Optional[float] = None  # when windup ends → damage hits
 
-        self.qte = TimingBar(self.game.screen)
+        screen = self.game.screen
+        self.qte = TimingBar(screen.get_width(), screen.get_height())
         self.last_qte_result = None
 
     def on_enter(self) -> None:
@@ -176,6 +185,7 @@ class CombatState(GameState):
             logger.info(f"→ Entered combat with {self.enemy.name} [{self.enemy.id}]")
         self.last_enemy_attack_time = time.time()
         self.last_qte_result = None
+        self.pending_damage_at = None
 
     def handle_action(self, action: str) -> bool:
         if action == InputAction.ATTACK and self.enemy and self.enemy.alive:
@@ -233,26 +243,47 @@ class CombatState(GameState):
 
         self.qte.update(dt)
 
-        # enemy attacks
+        if self.enemy.sprite and self.enemy.sprite.animator:
+            self.enemy.sprite.animator.update(dt)
+
         now = time.time()
-        if now - self.last_enemy_attack_time >= self.enemy.attack_speed:
-            if self.qte.active:
-                # TODO: change 2.0 to enemy crit modifier
-                damage = self.enemy.damage * 2.0
-                self.qte.stop()
-                self.level.player.get_damage(damage)
-                logger.info(f"Player get damage while attacking and get crtitcal {damage} damage! ")
 
-            else:
-                damage = self.enemy.damage
-                self.level.player.get_damage(damage)
-                logger.info(f"{self.enemy.name} attacks player for {damage} damage!")
+        # Урон прилетает когда заканчивается кадр замаха
+        if self.pending_damage_at and now >= self.pending_damage_at:
+            self._apply_enemy_damage()
+            self.pending_damage_at = None
 
-                self.last_enemy_attack_time = now
+        # Начало новой атаки (только если предыдущая завершена)
+        if not self.pending_damage_at and (now - self.last_enemy_attack_time >= self.enemy.attack_speed):
+            self._start_enemy_attack()
+            self.last_enemy_attack_time = now
 
-            if not self.level.player.alive:
-                logger.info("Player died!")
-                self._end_combat(game_over=True)
+    def _start_enemy_attack(self):
+        if self.enemy.sprite and self.enemy.sprite.animator and self.enemy.attack_windup > 0:
+            self.enemy.sprite.animator.play("attack")
+            self.pending_damage_at = time.time() + self.enemy.attack_windup
+        else:
+            self._apply_enemy_damage()
+
+    def _apply_enemy_damage(self):
+        if not self.enemy or not self.level.player.alive:
+            return
+
+        if self.qte.active:
+            # TODO: change 2.0 to enemy crit modifier
+            damage = self.enemy.damage * 2.0
+            self.qte.stop()
+            logger.info(f"Player hit during attack and takes critical {damage} damage!")
+        else:
+            damage = self.enemy.damage
+            logger.info(f"{self.enemy.name} attacks player for {damage} damage!")
+
+        self.level.player.get_damage(damage)
+        self.game.renderer.trigger_damage_flash()
+
+        if not self.level.player.alive:
+            logger.info("Player died!")
+            self._end_combat(game_over=True)
 
     def _end_combat(self, game_over: bool = False):
         if self.enemy and not self.enemy.alive:
@@ -264,10 +295,5 @@ class CombatState(GameState):
         else:
             self.game.change_state(ExplorationState(self.game))
 
-    def render(self) -> None:
-        """Рендер боя + QTE полосы"""
-        self.game.renderer.render()  # базовый рендер уровня
-
-        # Дополнительно рисуем QTE поверх всего
-        if self.qte.active:
-            self.qte.draw(self.game.screen)
+    def render(self, dt: float = 0.0) -> None:
+        self.game.renderer.render(self.qte, dt=dt)

@@ -79,7 +79,7 @@ class Game:
                 self.current_state._update_approaches(dt)
 
             # Render
-            self.current_state.render()
+            self.current_state.render(dt)
             pygame.display.flip()
 
             if not action_taken:
