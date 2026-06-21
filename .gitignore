@@ -3,3 +3,6 @@ data/assets
 doc
 __pycache__/
 .venv/
+CLAUDE.md
+DEVLOG.md
+TODO.md

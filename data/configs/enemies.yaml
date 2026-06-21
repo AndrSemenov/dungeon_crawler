@@ -1,0 +1,39 @@
+# ENEMIES
+enemies:
+  skeleton:
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 1
+    animations:
+      approach:
+        # 2 кадра бега скелета (положить в data/assets/enemies/)
+        frames: ["skeleton_run_0.png", "skeleton_run_1.png"]
+        frame_duration: 0.2
+        loop: true
+      attack:
+        # кадр 0 — замах, кадр 1 — удар (урон приходит при переходе к кадру 1)
+        frames: ["skeleton_attack_0.png", "skeleton_attack_1.png"]
+        frame_duration: 0.35
+        loop: false
+
+  strong_skeleton:
+    # asset: "Strong_Skeleton.png"
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 2
+
+  meduza:
+    # asset: "Meduza.png"
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 3
+
+  boss:
+    # asset: "Minotaur.png"
+    asset: "Skeleton.png"
+    hp_max: 50
+    damage: 1
+    difficulty: 4   # отдельный уровень
