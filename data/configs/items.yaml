@@ -7,4 +7,3 @@ weapons:
     crit_multiplier: 1.6
     stamina_cost: 10
     qte_speed_bonus: 0
-    asset_dir: "weapons/rusty_sword"

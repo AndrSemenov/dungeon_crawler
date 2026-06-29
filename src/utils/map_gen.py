@@ -92,10 +92,8 @@ class EnemyGenerator:
                     x, y = pos
                     enemies.append({
                         "name": enemy_name,
-                        "asset": enemy_data["asset"],
                         "hp_max": enemy_data["hp_max"],
                         "damage": enemy_data["damage"],
-                        "animations": enemy_data.get("animations"),
                         "x": x,
                         "y": y,
                     })
@@ -110,10 +108,8 @@ class EnemyGenerator:
             for x, y in positions:
                 enemies.append({
                     "name": enemy_name,
-                    "asset": enemy_data["asset"],
                     "hp_max": enemy_data["hp_max"],
                     "damage": enemy_data["damage"],
-                    "animations": enemy_data.get("animations"),
                     "x": x,
                     "y": y,
                 })
