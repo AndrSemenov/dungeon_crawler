@@ -43,6 +43,11 @@ class ExplorationState(GameState):
         super().__init__(game)
         self.last_approach_check = time.time()
 
+    def on_enter(self) -> None:
+        weapon = self.level.player.inventory.current_weapon
+        if weapon.animator:
+            weapon.animator.play("idle")
+
     def handle_action(self, action: str) -> bool:
         player = self.level.player
 
@@ -189,17 +194,18 @@ class CombatState(GameState):
 
     def handle_action(self, action: str) -> bool:
         if action == InputAction.ATTACK and self.enemy and self.enemy.alive:
+            weapon = self.level.player.inventory.current_weapon
             if not self.qte.active:
-                # Запускаем QTE
                 enemy_defense = self.enemy.defense if hasattr(self.enemy, 'defense') else 1
-
-                weapon = self.level.player.inventory.current_weapon
                 self.qte.start(enemy_defense, weapon)
+                if weapon.animator:
+                    weapon.animator.play("windup")
                 logger.info(f"QTE started against {self.enemy.name}")
                 return True
             else:
-                # Игрок нажал атаку во время активного QTE — фиксируем результат
                 result, multiplier = self.qte.stop()
+                if weapon.animator:
+                    weapon.animator.play("strike")
                 self._apply_qte_result(result, multiplier)
                 return True
 
@@ -245,6 +251,12 @@ class CombatState(GameState):
 
         if self.enemy.sprite and self.enemy.sprite.animator:
             self.enemy.sprite.animator.update(dt)
+
+        weapon = self.level.player.inventory.current_weapon
+        if weapon.animator:
+            weapon.animator.update(dt)
+            if not weapon.animator.active:
+                weapon.animator.play("idle")
 
         now = time.time()
 

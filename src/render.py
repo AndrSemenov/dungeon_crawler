@@ -64,10 +64,10 @@ class GameRenderer:
         self.center_x = screen.get_width() // 2
         self.center_y = screen.get_height() // 2
 
-        self.minimap_size = 360
+        self.minimap_size = 270
         self.minimap_padding = 2
         self.minimap_rect = pygame.Rect(
-            self.screen.get_width() - self.minimap_size - self.minimap_padding,
+            self.minimap_padding,
             self.minimap_padding,
             self.minimap_size,
             self.minimap_size
@@ -215,6 +215,16 @@ class GameRenderer:
 
         self.screen.blit(minimap, self.minimap_rect.topleft)
 
+    def draw_weapon(self):
+        weapon = self.player.inventory.current_weapon
+        if not weapon.animator or not weapon.animator.active:
+            return
+        frame = weapon.animator.current_frame
+        if frame is None:
+            return
+        scaled = pygame.transform.scale(frame, self.screen.get_size())
+        self.screen.blit(scaled, (0, 0))
+
     def trigger_damage_flash(self):
         self._damage_flash = self._flash_duration
 
@@ -240,6 +250,7 @@ class GameRenderer:
         fov = self.get_field_of_view_state()
         self.draw_hallways(fov)
         self.draw_entities()
+        self.draw_weapon()
         self.draw_minimap()
         if qte and qte.active:
             self.draw_qte(qte)

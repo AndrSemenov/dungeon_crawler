@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import Any, Optional
 
 @dataclass
 class Weapon:
@@ -23,6 +23,8 @@ class Weapon:
     crit_multiplier: float = 1.5
     stamina_cost: int = 10
     qte_speed_bonus: float = 0.0
+    asset_dir: Optional[str] = None
+    animator: Any = field(default=None, repr=False, compare=False)
 
 
 @dataclass

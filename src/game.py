@@ -1,6 +1,6 @@
 import pygame
 
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, logger
+from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, ASSETS_PATH, logger
 from src.entities import Player, Enemy
 from src.level import Level
 from src.render import GameRenderer, SpriteBase
@@ -23,6 +23,7 @@ class Game:
             x=PLAYER_START_POS[0],
             y=PLAYER_START_POS[1]
         )
+        self._load_weapon_animations(self.player.inventory.current_weapon)
         self.map = MAP
         self.sprites = {
             textures: {
@@ -84,6 +85,28 @@ class Game:
 
             if not action_taken:
                 pygame.time.wait(10)
+
+    def _load_weapon_animations(self, weapon):
+        if not weapon.asset_dir:
+            return
+        from src.animation import Animation, AnimationFrame, Animator
+        anim_dir = ASSETS_PATH / weapon.asset_dir
+        animator = Animator()
+        # single-frame states: idle (loop), windup (loop), strike (one-shot)
+        states = {
+            "idle":   ("idle.png",    True,  1.0),
+            "windup": ("windup.png",  True,  1.0),
+            "strike": ("strike.png",  False, 0.2),
+        }
+        for name, (filename, loop, duration) in states.items():
+            path = anim_dir / filename
+            try:
+                surface = pygame.image.load(str(path)).convert_alpha()
+                animator.add(name, Animation([AnimationFrame(surface, duration)], loop=loop))
+            except Exception as e:
+                logger.warning(f"Weapon sprite not found: {path} ({e})")
+        weapon.animator = animator
+        animator.play("idle")
 
     def change_state(self, new_state: GameState):
         self.current_state.on_exit()
