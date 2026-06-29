@@ -1,6 +1,6 @@
 import pygame
 
-from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, ASSETS_PATH, logger
+from src.constants import SCREEN_WIDTH, SCREEN_HEIGHT, FPS, MAP, ENEMIES, MAP_SPRITES, PLAYER_START_POS, ASSETS_PATH, PLAYER_CONFIG, logger
 from src.entities import Player, Enemy
 from src.level import Level
 from src.render import GameRenderer, SpriteBase
@@ -23,7 +23,8 @@ class Game:
             x=PLAYER_START_POS[0],
             y=PLAYER_START_POS[1]
         )
-        self._load_weapon_animations(self.player.inventory.current_weapon)
+        weapon_key = PLAYER_CONFIG.get("starting_weapon", "rusty_sword")
+        self._load_weapon_animations(self.player.inventory.current_weapon, weapon_key)
         self.map = MAP
         self.sprites = {
             textures: {
@@ -86,11 +87,9 @@ class Game:
             if not action_taken:
                 pygame.time.wait(10)
 
-    def _load_weapon_animations(self, weapon):
-        if not weapon.asset_dir:
-            return
+    def _load_weapon_animations(self, weapon, weapon_key: str):
         from src.animation import Animation, AnimationFrame, Animator
-        anim_dir = ASSETS_PATH / weapon.asset_dir
+        anim_dir = ASSETS_PATH / "weapons" / weapon_key
         animator = Animator()
         # single-frame states: idle (loop), windup (loop), strike (one-shot)
         states = {

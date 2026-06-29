@@ -183,60 +183,62 @@ class Enemy(Creature):
                  name: str,
                  hp_max: int,
                  damage: int,
-                 asset: str,
                  defense: int = 0,
                  attack_speed: float = 3.0,
                  base_attack_probability: float = 0.01, # TODO: refactor
-                 animations: Optional[dict] = None,
                  x: int = 0,
                  y: int = 0,
                  sprite_root_dir: Path = Path("data/assets/enemies")
                  ):
-        attributes = Attributes(
-            hp_max=hp_max,
-            defense=defense
-        )
-        super().__init__(attributes=attributes, sprite_path=sprite_root_dir / asset, x=x, y=y)
+        attributes = Attributes(hp_max=hp_max, defense=defense)
+        super().__init__(attributes=attributes, sprite_path=sprite_root_dir / name / "idle.png", x=x, y=y)
 
         self.name = name
         self.damage = damage
         self.attack_speed = attack_speed
-        self.attack_windup: float = 0.0  # duration of attack windup frame, set from animation config
+        self.attack_windup: float = 0.0
         self.approach: Optional[ApproachProcess] = None
-
-        if animations and self.sprite:
-            self._load_animations(animations, sprite_root_dir)
-
-    def _load_animations(self, config: dict, sprite_root_dir: Path) -> None:
-        import pygame
-        from src.animation import Animation, AnimationFrame, Animator
-
-        animator = Animator()
-        for anim_name, anim_cfg in config.items():
-            frame_duration = anim_cfg.get("frame_duration", 0.2)
-            loop = anim_cfg.get("loop", True)
-            frames = []
-            for filename in anim_cfg.get("frames", []):
-                path = sprite_root_dir / filename
-                try:
-                    surface = pygame.image.load(str(path)).convert_alpha()
-                    frames.append(AnimationFrame(surface=surface, duration=frame_duration))
-                except Exception as e:
-                    logger.warning(f"Failed to load animation frame {path}: {e}")
-
-            if frames:
-                animator.add(anim_name, Animation(frames, loop=loop))
-                if anim_name == "attack":
-                    self.attack_windup = frame_duration
-
-        self.sprite.animator = animator
-
         self.combat_state = {
             "charging": False,
             "charge_progress": 0.0,
             "in_combat": False,
             "advantage": 1.0,
         }
+
+        if self.sprite:
+            self._load_animations(sprite_root_dir)
+
+    def _load_animations(self, sprite_root_dir: Path) -> None:
+        import pygame
+        from src.animation import Animation, AnimationFrame, Animator
+        from src.render import make_labeled_missing_surface
+
+        folder = sprite_root_dir / self.name
+        # TODO: derive frame_duration from attack_speed when combat system is reworked
+        APPROACH_FRAME_DURATION = 0.2
+        ATTACK_FRAME_DURATION = 0.35
+
+        def load_frame(filename: str, duration: float) -> AnimationFrame:
+            path = folder / filename
+            try:
+                surface = pygame.image.load(str(path)).convert_alpha()
+            except Exception:
+                surface = make_labeled_missing_surface(f"{self.name}/{filename}")
+            return AnimationFrame(surface=surface, duration=duration)
+
+        animator = Animator()
+        animator.add("approach", Animation(
+            [load_frame("approach_0.png", APPROACH_FRAME_DURATION),
+             load_frame("approach_1.png", APPROACH_FRAME_DURATION)],
+            loop=True
+        ))
+        animator.add("attack", Animation(
+            [load_frame("attack_0.png", ATTACK_FRAME_DURATION),
+             load_frame("attack_1.png", ATTACK_FRAME_DURATION)],
+            loop=False
+        ))
+        self.attack_windup = ATTACK_FRAME_DURATION
+        self.sprite.animator = animator
 
     @property
     def charging(self) -> bool:

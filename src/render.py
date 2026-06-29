@@ -14,6 +14,29 @@ if TYPE_CHECKING:
     from src.animation import Animator
 
 
+_MISSING_SURFACE: Optional[pygame.Surface] = None
+
+
+def _get_missing_surface() -> pygame.Surface:
+    global _MISSING_SURFACE
+    if _MISSING_SURFACE is None:
+        path = Path("data/assets/missing.png")
+        try:
+            _MISSING_SURFACE = pygame.image.load(str(path)).convert_alpha()
+        except Exception:
+            surf = pygame.Surface((128, 128))
+            surf.fill((255, 0, 255))
+            _MISSING_SURFACE = surf
+    return _MISSING_SURFACE
+
+
+def make_labeled_missing_surface(label: str) -> pygame.Surface:
+    surf = _get_missing_surface().copy()
+    font = pygame.font.SysFont("monospace", 14, bold=True)
+    surf.blit(font.render(label, True, (255, 50, 50)), (5, 5))
+    return surf
+
+
 @dataclass
 class FOVState:
     first_cell: bool
@@ -27,7 +50,10 @@ class FOVState:
 
 class SpriteBase:
     def __init__(self, image_path: Path):
-        self.sprite = pygame.image.load(image_path)
+        try:
+            self.sprite = pygame.image.load(str(image_path)).convert_alpha()
+        except Exception:
+            self.sprite = make_labeled_missing_surface(image_path.name)
 
     def draw(self, surface: pygame.Surface, x: float = 0.0, y: float = 0.0):
         surface.blit(self.sprite, dest=(x, y))
